@@ -1,16 +1,15 @@
     //touch of evil  witness for the prosecution
+    console.disableYellowBox = true
 import React, { Component } from 'react';
-import { Animated, Button, Platform, StyleSheet, Image, Text, View, ProgressViewIOS } from 'react-native';
+import { Animated, AppRegistry, Button, Platform, StyleSheet, Image, Text, View, ProgressViewIOS, TouchableOpacity } from 'react-native';
 import BackgroundFetch from "react-native-background-fetch";
 import * as firebase from 'firebase';
 import { CalendarList } from 'react-native-calendars' 
+import { StackNavigator, } from 'react-navigation';
+import Icon from 'react-native-vector-icons/Ionicons'
 import moment from 'moment'
-import axios from 'axios'/*
-import countries from './utils/countries';*/
-
-/*for(let i = 0; i < countries.length; i++) {
-  console.log(countries[i].name, countries[i].flag)
-}*/
+import axios from 'axios'
+import Settings from './Settings.js'
 
 var countries = [{flag: require("./utils/png/afghanistan.png"),name: "Afghanistan", schengen: false, europe: false},
 {flag: require("./utils/png/albania.png"), name: "Albania", schengen: false, europe: true, colors: ['black', 'red']},
@@ -229,7 +228,11 @@ const _minDate = moment().subtract(90, 'days').format(_format)
   };
  const firebaseApp = firebase.initializeApp(firebaseConfig);
 database= firebase.database()
+
 export default class App extends Component {
+	    static navigationOptions = {
+        header: null
+    }
   constructor(props) {
     initialState = {
       [_today]: {}
@@ -364,9 +367,9 @@ console.log(doc)
     BackgroundFetch.configure({
       minimumFetchInterval: 15,
     }, () => {
-      console.log("[js] Received background-fetch event");
-     this.setState({timeNow: moment().format(), curCol: 'yellow'})
-     this.checkToday()
+      alert("[js] Received background-fetch event");
+     this.setState({timeNow: moment().format(), curCol: 'yellow'}).then(this.checkToday())
+     
       // Required: Signal completion of your task to native code
       // If you fail to do this, the OS can terminate your app
       // or assign battery-blame for consuming too much background-time
@@ -410,6 +413,7 @@ console.log(doc)
           snp: snapshot.val(),
           daysInEU: snapshot.val().daysInEU,
           daysLeft: snapshot.val().daysLeft,
+          lastDay: moment().add(snapshot.val().daysLeft, 'days').format('MMMM Do YYYY'),
           mkddts: snapshot.val().markedDates
         }, () => {
 
@@ -458,6 +462,7 @@ console.log(doc)
     )}.bind(this))
   }
   render() {
+  	 const { navigate } = this.props.navigation;
     Animated.timing(                  // Animate over time
       this.state.fadeAnim,            // The animated value to drive
       {
@@ -470,7 +475,14 @@ console.log(doc)
 
       <View style={styles.container}>
         
-        <View style={{marginTop: 32, marginBottom: 6}}><Text style={{fontSize: 14, color: 'gray', textAlign: 'center'}}>You are in</Text></View>
+        <View style={{flex: 1, flexDirection: 'row', flexWrap: 'wrap', marginTop: 32, marginBottom: 6}}>
+	        	<View style={{flex: .35 , marginLeft: 18}}>
+	        		<TouchableOpacity onPress={() => navigate('Settings')}><Icon name="ios-menu-outline" size={30} color="white" /></TouchableOpacity>
+	        	</View>
+	        	<View style={{flex: .65, alignItems: 'flex-start'}}>
+	        		<Text style={{fontSize: 14, color: 'gray', textAlign: 'center'}}>You are in</Text>
+	        	</View>
+        	</View>
 
         <View style={{flexDirection: 'row', justifyContent: 'center', height:40}}> 
           <View style={{paddingBottom: 6}}><Text style={{fontSize: 30, fontWeight: 'bold', color: 'white'}}>{this.state.ctry}</Text></View>
@@ -518,3 +530,19 @@ const styles = StyleSheet.create({
     backgroundColor: 'black'
   }
 });
+export const freschproject = StackNavigator({
+  App: { screen: App },
+  Settings: { screen: Settings }
+ /* YesInEurope: {screen: YesInEurope}*/
+});
+
+AppRegistry.registerComponent('freschproject', () => freschproject);
+
+
+
+
+
+
+
+
+
