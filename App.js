@@ -1,4 +1,5 @@
     //touch of evil  witness for the prosecution
+    // d9162d32-0fb6-4da1-a0a0-d5b96a3757fe
     console.disableYellowBox = true
 import React, { Component } from 'react';
 import { Animated, AppRegistry, Button, Platform, StyleSheet, Image, Text, View, ProgressViewIOS, TouchableOpacity } from 'react-native';
@@ -6,10 +7,11 @@ import BackgroundFetch from "react-native-background-fetch";
 import * as firebase from 'firebase';
 import { CalendarList } from 'react-native-calendars' 
 import { StackNavigator, } from 'react-navigation';
-import Icon from 'react-native-vector-icons/Ionicons'
-import moment from 'moment'
-import axios from 'axios'
-import Settings from './Settings.js'
+import Icon from 'react-native-vector-icons/Ionicons';
+import moment from 'moment';
+import axios from 'axios';
+import Settings from './Settings.js';
+import AnimDemo from './AnimDemo.js';
 
 var countries = [{flag: require("./utils/png/afghanistan.png"),name: "Afghanistan", schengen: false, europe: false},
 {flag: require("./utils/png/albania.png"), name: "Albania", schengen: false, europe: true, colors: ['black', 'red']},
@@ -209,7 +211,7 @@ var countries = [{flag: require("./utils/png/afghanistan.png"),name: "Afghanista
 {flag: require("./utils/png/zimbabwe.png"), name: "Zimbabwe", schengen: false, europe: false}
 ]
 
-
+//NSLocationAlwaysAndWhenInUseUsageDescription and NSLocationWhenInUseUsageDescription
 
 
 
@@ -235,7 +237,7 @@ export default class App extends Component {
     }
   constructor(props) {
     initialState = {
-      [_today]: {}
+      [_today]: {selected: true}
       }
     super(props);    
       this.state={
@@ -244,6 +246,7 @@ export default class App extends Component {
         col: 'white',
         daysInEU: 0,
         daysLeft: 90,
+        curIn: false,
         fadeAnim:  new Animated.Value(0)
       }
       this.revGeocode = this.revGeocode.bind(this)
@@ -262,6 +265,7 @@ export default class App extends Component {
       });
     } 
   checkToday() {
+  		
        navigator.geolocation.getCurrentPosition(function(pos) {
             var { longitude, latitude, accuracy, heading } = pos.coords
             this.setState({
@@ -271,48 +275,39 @@ export default class App extends Component {
                 uPosition: pos.coords,
                 deviceLng: pos.coords.longitude,
                 deviceLat: pos.coords.latitude,
-                loading: false
-            }, ()=> console.log(this.state.uLnglat))
-/*      this.watchId = navigator.geolocation.watchPosition(
-      (position) => {
-            this.setState({
-                uLatitude: position.coords.latitude,
-                uLongitude: position.coords.longitude,
-                uPosition: position.coords,
-                deviceLng: pos.coords.longitude,
-                deviceLat: pos.coords.latitude,
-         error: null,
-        },() => this.revGeocode(this.state.deviceLat, this.state.deviceLng));      
-      },
-      (error) => this.setState({ error: error.message }),
-      { enableHighAccuracy: true,  distanceFilter: 50 },
-)*/}.bind(this))
+                col: 'yellow',
+                timeNow: moment().format('h:mm:ss a')
+            }, () => this.revGeocode(this.state.deviceLat, this.state.deviceLng, () => {
+            	this.calcDays
+            }))
+		}.bind(this))
   }
   onDaySelect(day) { 
+  	console.log(day)
       const _selectedDay = moment(day.dateString).format(_format);      
-      /*let marked = true;*/
-      let selected = true;
-      console.log(_selectedDay)
+      let selected = true;  
       if (this.state._markedDates[_selectedDay]) {
-      /*  marked = this.state._markedDates[_selectedDay].marked;*/
         selected = !this.state._markedDates[_selectedDay].selected;
       }
-      const updatedMarkedDates = {...this.state._markedDates, ...{ [_selectedDay]: { /*marked,*/ selected } } }
+
+      const updatedMarkedDates = {...this.state._markedDates, ...{ [_selectedDay]: { selected } } }
+      console.log(updatedMarkedDates)
       this.setState({ _markedDates: updatedMarkedDates }, () =>
           this.calcDays(this.state._markedDates)
         );
   }
+
   calcDays(mds) {
     console.log(mds)
-    var mkdarr = []
+    var selectedArray = []
     for( let mkds in mds) {
       if(mds[mkds].selected) {
-        mkdarr.push(mds[mkds])
+        selectedArray.push(mds[mkds])
       }
-      console.log(mkdarr)
+      console.log(selectedArray)
       this.setState({
-        daysInEU: mkdarr.length,
-        daysLeft: 90 - mkdarr.length
+        daysInEU: selectedArray.length,
+        daysLeft: 90 - selectedArray.length
       }, () => {
         this.writeUserData(this.state.uid, this.state._markedDates, this.state.daysInEU, this.state.daysLeft)
       })
@@ -340,18 +335,9 @@ console.log(doc)
               curOut: curOut,
               curIn: curIn,
               curNear: curNear,
-                  }, () => {
-                    if(this.state.curIn) {
-                      this.setState({curCol: 'red'})
-                    } else if(this.state.curNear) {
-                      this.setState({curCol: 'green'})
-                    } else if(this.state.curOut) {
-                      this.setState({curCol: 'blue'})
-                    }
                   })
                   }
                 }
-
           this.setState({            
             address:  doc.data.results[0].formatted_address.split(",")[0] + ", " + doc.data.results[0].formatted_address.split(",")[1],
             latitude: doc.data.results[0].geometry.location[1],
@@ -362,14 +348,45 @@ console.log(doc)
        throw error
     }); 
   }
+  componentWillMount() {
+        navigator.geolocation.getCurrentPosition(function(pos) {
+            var { longitude, latitude, accuracy, heading } = pos.coords
+            this.setState({
+                uLongitude: pos.coords.longitude,
+                uLatitude: pos.coords.latitude,
+                uLnglat: [pos.coords.longitude, pos.coords.latitude],
+                uPosition: pos.coords,
+                deviceLng: pos.coords.longitude,
+                deviceLat: pos.coords.latitude,
+                loading: false
+            })
+      this.watchId = navigator.geolocation.watchPosition(
+      (position) => {
+            this.setState({
+            	position: position,
+                uLatitude: position.coords.latitude,
+                uLongitude: position.coords.longitude,
+                uPosition: position.coords,
+                deviceLng: pos.coords.longitude,
+                deviceLat: pos.coords.latitude,
+                timeNow: moment().format('h:mm:ss a'),
+         		 error: null,
+        },() => this.revGeocode(this.state.deviceLat, this.state.deviceLng));      
+      },
+      (error) => this.setState({ error: error.message }),
+      { enableHighAccuracy: true,  distanceFilter: 100 },
+
+)      
+        }.bind(this))
+  }
     componentDidMount() {
+    	console.log(this)
   // configure, set test BG Fetch
     BackgroundFetch.configure({
       minimumFetchInterval: 15,
     }, () => {
-      alert("[js] Received background-fetch event");
-     this.setState({timeNow: moment().format(), curCol: 'yellow'}).then(this.checkToday())
-     
+    	console.log("wtf")
+    
       // Required: Signal completion of your task to native code
       // If you fail to do this, the OS can terminate your app
       // or assign battery-blame for consuming too much background-time
@@ -399,15 +416,21 @@ console.log(doc)
     const uid = firebase.auth().currentUser.uid
     console.log(uid)
     database.ref('users/' + uid).once('value', (snapshot) =>{
-
+     if(this.state.curIn) {
+      	var cIn = true
+      }  else if(!this.state.curIn) {
+      	var cIn = false
+      }
       if(!snapshot.val()) {
+      	console.log(this.state)
         database.ref('users/' + uid).set({
           uid: uid,
           daysInEU: 0,
           daysLeft: 90,
-         markedDates: {[_today]: {selected: false}}
+          markedDates: {[_today]: {selected: cIn}}
         })
       }
+ 
        database.ref('users/' + this.state.uid).on('value', (snapshot) =>{
          this.setState({
           snp: snapshot.val(),
@@ -434,32 +457,6 @@ console.log(doc)
     });
   });
   // Get geolocation
-       navigator.geolocation.getCurrentPosition(function(pos) {
-            var { longitude, latitude, accuracy, heading } = pos.coords
-            this.setState({
-                uLongitude: pos.coords.longitude,
-                uLatitude: pos.coords.latitude,
-                uLnglat: [pos.coords.longitude, pos.coords.latitude],
-                uPosition: pos.coords,
-                deviceLng: pos.coords.longitude,
-                deviceLat: pos.coords.latitude,
-                loading: false
-            })
-      this.watchId = navigator.geolocation.watchPosition(
-      (position) => {
-            this.setState({
-                uLatitude: position.coords.latitude,
-                uLongitude: position.coords.longitude,
-                uPosition: position.coords,
-                deviceLng: pos.coords.longitude,
-                deviceLat: pos.coords.latitude,
-         error: null,
-        },() => this.revGeocode(this.state.deviceLat, this.state.deviceLng));      
-      },
-      (error) => this.setState({ error: error.message }),
-      { enableHighAccuracy: true,  distanceFilter: 50 },
-
-    )}.bind(this))
   }
   render() {
   	 const { navigate } = this.props.navigation;
@@ -476,8 +473,9 @@ console.log(doc)
       <View style={styles.container}>
         
         <View style={{flex: 1, flexDirection: 'row', flexWrap: 'wrap', marginTop: 32, marginBottom: 6}}>
-	        	<View style={{flex: .35 , marginLeft: 18}}>
-	        		<TouchableOpacity onPress={() => navigate('Settings')}><Icon name="ios-menu-outline" size={30} color="white" /></TouchableOpacity>
+
+	         <View style={{flex: .35 , marginLeft: 18}}>
+	        		<TouchableOpacity onPress={() => navigate('AnimDemo')}><Icon name="ios-menu-outline" size={30} color="white" /></TouchableOpacity>
 	        	</View>
 	        	<View style={{flex: .65, alignItems: 'flex-start'}}>
 	        		<Text style={{fontSize: 14, color: 'gray', textAlign: 'center'}}>You are in</Text>
@@ -486,12 +484,12 @@ console.log(doc)
 
         <View style={{flexDirection: 'row', justifyContent: 'center', height:40}}> 
           <View style={{paddingBottom: 6}}><Text style={{fontSize: 30, fontWeight: 'bold', color: 'white'}}>{this.state.ctry}</Text></View>
-          <View style={{marginLeft: 20, marginTop: 4}}><Image source={this.state.flag} style={{width: 30, height: 30}}/></View>
+          <View style={{marginLeft: 20, marginTop: 4}}><TouchableOpacity onPress={() => this.checkToday()}><Image source={this.state.flag} style={{width: 30, height: 30}}/></TouchableOpacity></View>
         </View>
       
         <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 28}}>
-        <View style={{flex: .5}}><Text style={{color: 'white', fontSize: 18, textAlign: 'center'}}>Days In</Text></View>
-        <View style={{flex: .5}}><Text style={{color: 'white', fontSize: 18, textAlign: 'center'}}>Days Left</Text></View>
+        <View style={{flex: .5}}><Text style={{color: '#F6FEAC', fontSize: 18, textAlign: 'center'}}>Days In</Text></View>
+        <View style={{flex: .5}}><Text style={{color: '#F6FEAC', fontSize: 18, textAlign: 'center'}}>Days Left</Text></View>
         </View>
         <View style={{flexDirection: 'row'}}>
         <View style={{flex: .5}}><Text style={{color: 'white', fontSize: 24, textAlign: 'center'}}>{this.state.daysInEU}</Text></View>
@@ -503,19 +501,19 @@ console.log(doc)
            <CalendarList
                 horizontal={true}
                 style={{marginTop: 1}}           
-                theme={{ calendarBackground: 'black', dayTextColor: 'green', dotColor: 'red', monthTextColor: 'white', selectedDayTextColor: 'red'}}
+                theme={{ calendarBackground: 'black',/* dayTextColor: 'gray',*/  monthTextColor: 'white', selectedDayTextColor: 'red'}}
                 pastScrollRange={3}
                 futureScrollRange={0}
                 onDayPress={this.onDaySelect}
                 markedDates={this.state._markedDates}
                 markingType={'period'}
+                
             /> 
         </View>
         <View style={{flex: 1, flexDirection: 'column'}}>
          <View style={{alignItems: 'center', marginBottom: 6}}><Text style={{fontSize: 14, color: 'gray'}}>You can stay until</Text></View>
-        <View style={{alignItems: 'center', marginBottom: 8}}><Text style={{color: this.state.col, fontSize: 18, fontWeight: 'bold'}}>{this.state.lastDay}</Text></View>
+        <View style={{alignItems: 'center', marginBottom: 8}}><Text style={{color: '#F6FEAC', fontSize: 18, fontWeight: 'bold'}}>{this.state.lastDay}</Text></View>
         </View>
-        <View style={{alignItems: 'center'}}><Text style={{color: this.state.col}}>{this.state.temp}</Text></View>
         <View style={{alignItems: 'center'}}><Text style={{color: this.state.col}}>{this.state.timeNow}</Text></View>
       </View>
     );
@@ -532,8 +530,8 @@ const styles = StyleSheet.create({
 });
 export const freschproject = StackNavigator({
   App: { screen: App },
-  Settings: { screen: Settings }
- /* YesInEurope: {screen: YesInEurope}*/
+  Settings: { screen: Settings },
+  AnimDemo: {screen: AnimDemo}
 });
 
 AppRegistry.registerComponent('freschproject', () => freschproject);
