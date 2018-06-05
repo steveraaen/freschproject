@@ -13,20 +13,25 @@ export default class Settings extends Component {
 		this.state={
 			test: "there is state"
 		}
+
 	}
 	componentWillMount() {
 
 		const format = 'YYYY-MM-DD'
 		var mdArr = []
-		for(let i = 0; i < 90; i++) {
+		var boxArr = []
+		for(let i = 0; i < 180; i++) {
 			 mdArr.push({[moment().subtract(i, 'days').format(format)]:{selected: true, marked: true, dotColor: 'red'}})		
 		}
 		var newObj = Object.assign({}, ...mdArr)
-		this.setState({dts: newObj})
-
+		this.setState({dts: newObj, mdArr: mdArr})
 	}
+
 	render() {
 		const { navigate } = this.props.navigation;
+		const styles = StyleSheet.create({
+		})
+
 		return(
 			<View style={{flex: 1, justifyContent: 'center', backgroundColor: 'black'}}>
 				<View style={{marginTop: 32}}>
@@ -42,11 +47,25 @@ export default class Settings extends Component {
                 futureScrollRange={0}
                 onDayPress={this.onDaySelect}
                 markedDates={this.state.dts}
-                markingType={'period'}
-                
+                markingType={'period'}                
             /> 
+				</View>
+				<View style={{flex: 1}}>
+					<View style={{flex: 1}}>{this.state.boxArr}</View>
 				</View>
 			</View>
 			)
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+

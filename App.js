@@ -265,7 +265,7 @@ export default class App extends Component {
       });
     } 
   checkToday() {
-  		
+
        navigator.geolocation.getCurrentPosition(function(pos) {
             var { longitude, latitude, accuracy, heading } = pos.coords
             this.setState({
@@ -322,7 +322,8 @@ export default class App extends Component {
 console.log(doc)
         for (let i = 0; i < countries.length; i++) {
           var plnm = doc.data.results[0].address_components
-          if(plnm[4].long_name === countries[i].name || plnm[5].long_name === countries[i].name || plnm[6].long_name === countries[i].name) {
+          console.log(plnm)
+          if(countries[i].name === plnm[4].long_name  || countries[i].name === plnm[5].long_name) {
             var cctry = countries[i]
            console.log(cctry.name)
            var curOut = !cctry.europe && !cctry.schengen;
@@ -477,6 +478,9 @@ console.log(doc)
 	         <View style={{flex: .35 , marginLeft: 18}}>
 	        		<TouchableOpacity onPress={() => navigate('AnimDemo')}><Icon name="ios-menu-outline" size={30} color="white" /></TouchableOpacity>
 	        	</View>
+	    	         <View style={{flex: .35 , marginLeft: 18}}>
+	        		<TouchableOpacity onPress={() => navigate('Settings')}><Icon name="ios-menu-outline" size={30} color="white" /></TouchableOpacity>
+	        	</View>
 	        	<View style={{flex: .65, alignItems: 'flex-start'}}>
 	        		<Text style={{fontSize: 14, color: 'gray', textAlign: 'center'}}>You are in</Text>
 	        	</View>
@@ -502,7 +506,7 @@ console.log(doc)
                 horizontal={true}
                 style={{marginTop: 1}}           
                 theme={{ calendarBackground: 'black',/* dayTextColor: 'gray',*/  monthTextColor: 'white', selectedDayTextColor: 'red'}}
-                pastScrollRange={3}
+                pastScrollRange={6}
                 futureScrollRange={0}
                 onDayPress={this.onDaySelect}
                 markedDates={this.state._markedDates}
