@@ -284,7 +284,7 @@ export default class App extends Component {
                 col: 'yellow',
                 timeNow: moment().format('h:mm:ss a')
             }, () => this.revGeocode(this.state.deviceLat, this.state.deviceLng, () => {
-            	this.calcDays
+            	this.calcDays()
             }))
 		}.bind(this))
   }
@@ -336,13 +336,23 @@ export default class App extends Component {
            var curIn = cctry.schengen
            var curNear = !cctry.schengen && cctry.europe
            var flag = countries[i].flag
+           if(curIn){
+           		var curIOColor = 'red'
+           	} else{
+           		var curIOColor = 'green'
+           	}
+
            this.setState({
               ctry: cctry.name,
               flag: flag,
               curOut: curOut,
               curIn: curIn,
+              curIOColor: curIOColor,
               curNear: curNear,
+                  }, () => {
+                  		this.setState({_markedDates: {...this.state._markedDates, ...{[_today]: {selected: this.state.curIn, textColor: this.state.curIOColor}} }})
                   })
+
                   }
                 }
           this.setState({            
@@ -356,6 +366,7 @@ export default class App extends Component {
     }); 
   }
   componentWillMount() {
+  	 this.checkToday()
 NetInfo.getConnectionInfo().then((connectionInfo) => {
   console.log('Initial, type: ' + connectionInfo.type + ', effectiveType: ' + connectionInfo.effectiveType);
 });
@@ -406,10 +417,11 @@ NetInfo.addEventListener(
       this.setState({
       	daysInEU: JSON.parse(result).daysInEU,
       	daysLeft: JSON.parse(result).daysLeft,
-      	lastDay: moment().add(JSON.parse(result).daysLeft).format(_format),
+      	lastDay: moment().add(JSON.parse(result).daysLeft, 'days').format(_format),
       	_markedDates: JSON.parse(result).markedDates
       });
     });
+
   }
     componentDidMount() {
     	console.log(this)
@@ -431,7 +443,7 @@ NetInfo.addEventListener(
       	
 		var mdArr = []
 		for(let i = 1; i < 180; i++) {
-			 mdArr.push({[moment().subtract(i, 'days').format(_format)]:{color: 'green', selected: false}})		
+			 mdArr.push({[moment().subtract(i, 'days').format(_format)]:{textColor: 'green', selected: false}})		
 		}
 		var newObj = Object.assign({}, ...mdArr)
 		this.setState({_markedDates: newObj})
@@ -491,17 +503,15 @@ NetInfo.addEventListener(
         <View style={{flex: 1, flexDirection: 'row', flexWrap: 'wrap', marginTop: 32, marginBottom: 6}}>
 
 	         <View style={{flex: .20 , marginLeft: 18}}>
-	        		<TouchableOpacity onPress={() => navigate('AnimDemo')}><Icon name="ios-menu-outline" size={30} color="white" /></TouchableOpacity>
+	        		<TouchableOpacity onPress={() => navigate('AnimDemo')}><Icon name="ios-information-circle-outline" size={30} color="#F6FEAC" /></TouchableOpacity>
 	        	</View>
 	    	   <View style={{flex: .20 , marginLeft: 18}}>
 	        		<TouchableOpacity onPress={() => navigate('Intro')}><Icon name="ios-menu-outline" size={30} color="white" /></TouchableOpacity>
 	        	</View>
 	    	   <View style={{flex: .20 , marginLeft: 18}}>
-	        		<TouchableOpacity onPress={() => navigate('Settings')}><Icon name="ios-menu-outline" size={30} color="white" /></TouchableOpacity>
+	        		<TouchableOpacity onPress={() => navigate('Settings')}><Icon name="ios-notifications-outline" size={30} color="#F6FEAC" /></TouchableOpacity>
 	        	</View>
-	        	<View style={{flex: .65, alignItems: 'flex-start'}}>
-	        		<Text style={{fontSize: 14, color: 'gray', textAlign: 'center'}}>You are in</Text>
-	        	</View>
+
         	</View>
 
         <View style={{flexDirection: 'row', justifyContent: 'center', height:40}}> 
@@ -524,13 +534,14 @@ NetInfo.addEventListener(
 
                 horizontal={true}
                 style={{marginTop: 1}}           
-                theme={{ calendarBackground: 'black', monthTextColor: 'white', textDisabledColor: 'gray', selectedColor: 'coral'}}
+                theme={{ calendarBackground: 'black', monthTextColor: 'white', textDisabledColor: 'gray', selectedDayTextColor: 'red'}}
                 pastScrollRange={6}
               	 minDate={moment().subtract(180, 'days').format(_format)}
               	 maxDate={moment().format(_format)}                
                 futureScrollRange={0}
                 onDayPress={this.onDaySelect}
                 markedDates={this.state._markedDates}
+                markingType={'period'}
 
                 
             /> 

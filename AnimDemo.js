@@ -23,6 +23,7 @@ export default class AnimDemo extends Component {
         }
     ).start()
   }
+
   componentDidMount() {
 
     this.animate()
@@ -65,7 +66,7 @@ export default class AnimDemo extends Component {
           Freschen isn’t a planner. It is a tracker. 
         </Text></View>
         <View><Text style={{fontSize:14, color: 'white'}} >
-          Freschen will to check the amount of time you have left in Europe. 
+          Freschen will monitor the amount of time you can stay in Europe. 
           You cannot mark a date in the future. Freschen will do that for you. It checks to see which country you’re in whenever you’ve moved 10 km, or opened Freschen. 
           If you’ve been in a Schengen Area (SA) country within the past 90 days, scroll back on the calendar and tap the dates you were there. 
           There is one main page. It displays information about how many days you are eligible to stay in the Schengen area, as well as the calendar.
