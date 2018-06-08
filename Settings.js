@@ -19,19 +19,18 @@ export default class Settings extends Component {
 
 		const format = 'YYYY-MM-DD'
 		var mdArr = []
-		var boxArr = []
-		for(let i = 0; i < 180; i++) {
-			 mdArr.push({[moment().subtract(i, 'days').format(format)]:{selected: true, marked: true, dotColor: 'red'}})		
+		for(let i = 1; i < 180; i++) {
+			 mdArr.push({[moment().subtract(i, 'days').format(format)]:{color: 'green', selected: false}})		
 		}
 		var newObj = Object.assign({}, ...mdArr)
-		this.setState({dts: newObj, mdArr: mdArr})
+		this.setState({ates: newObj})
 	}
 
 	render() {
 		const { navigate } = this.props.navigation;
 		const styles = StyleSheet.create({
 		})
-
+		console.log(this.state)
 		return(
 			<View style={{flex: 1, justifyContent: 'center', backgroundColor: 'black'}}>
 				<View style={{marginTop: 32}}>
@@ -42,16 +41,18 @@ export default class Settings extends Component {
            <CalendarList
                 horizontal={true}
                 style={{marginTop: 1}}           
-                theme={{ calendarBackground: 'black',/* dayTextColor: 'gray',*/  monthTextColor: 'white', selectedDayTextColor: 'red'}}
-                pastScrollRange={3}
+                theme={{ calendarBackground: 'black', textDisabledColor: 'gray', dayTextColor: 'green', monthTextColor: 'white'}}
+                pastScrollRange={6}
+              	 minDate={moment().subtract(180, 'days').format('YYYY-MM-DD')}
+              	 maxDate={moment().format('YYYY-MM-DD')}                
                 futureScrollRange={0}
-                onDayPress={this.onDaySelect}
-                markedDates={this.state.dts}
-                markingType={'period'}                
+                markedDates={this.state.ates}			
+              
+              
             /> 
 				</View>
 				<View style={{flex: 1}}>
-					<View style={{flex: 1}}>{this.state.boxArr}</View>
+					
 				</View>
 			</View>
 			)
