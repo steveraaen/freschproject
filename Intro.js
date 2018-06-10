@@ -244,7 +244,7 @@ export default class Intro extends Component {
   		allFlags: allFlags,
   		euroFlags: euroFlags,
   		schengenFlags: schengenFlags,
-  		curFlags: allFlags
+  		curFlags: schengenFlags
 
   	}
 	this.animatedValue = new Animated.Value(0)
@@ -253,15 +253,11 @@ export default class Intro extends Component {
 	this.animate = this.animate.bind(this)
   } 
   componentDidMount() {
+
  setTimeout(() => {
  	LayoutAnimation.spring();
- 	this.setState({curFlags: this.state.euroFlags})
- setTimeout(() => {
- 	LayoutAnimation.spring();
- 	this.setState({curFlags: this.state.schengenFlags})
-}
- 	, 5000)
-}, 5000)
+ 	this.setState({curFlags: this.state.schengenFlags})} 	, 5000)
+
   	 this.animate()
   	 this.spin()
 
@@ -313,13 +309,13 @@ export default class Intro extends Component {
 	  },
 	  blockText: {
 	    color: '#5078F8', 
-	    fontSize:30, 
+	    fontSize:40, 
 	    letterSpacing: 6,
 	    textAlign: 'center'
 	  },
 	  blockTextb: {
 	    color: '#F6FEAC', 
-	    fontSize:30, 
+	    fontSize:40, 
 	    textAlign: 'center'
 	  },
 	  testa:{
@@ -341,7 +337,7 @@ export default class Intro extends Component {
   })
   	const marginLeft = this.animatedValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 320]
+    outputRange: [0, 100]
   })
   const opacity = this.animatedValue.interpolate({
     inputRange: [0, 1],
@@ -349,8 +345,8 @@ export default class Intro extends Component {
   })
 
   const marginTop = this.animatedValue.interpolate({
-    inputRange: [0, .5, 1],
-    outputRange: [40, 10, 40]
+    inputRange: [0,  1],
+    outputRange: [40, 10]
   })
     const marginBottom = this.animatedValue.interpolate({
     inputRange: [0,  1],
@@ -372,8 +368,12 @@ for(let i = 0; i < this.state.curFlags.length; i++) {
 
   	return(
   	<View style={styles.container}>
+      <View style={{flex: .2, flexDirection: 'row', justifyContent: 'flex-start'}}>
+        <Animated.View style={[styles.block, {marginLeft} ]}><Text style={styles.blockText}>Fres</Text> </Animated.View>
+        <Animated.View style={[styles.blockb, {marginTop}]}><Text style={styles.blockTextb}>chen</Text> </Animated.View>
+      </View>
   		<View style={{marginTop: 26, marginLeft: 22,flexDirection: 'row'}}>
-          <TouchableOpacity onPress={() => navigate('App')}><Icon name="ios-arrow-round-back-outline" size={40} color='#5078F8' /></TouchableOpacity>
+          <TouchableOpacity onPress={() => navigate('App')}><Icon name="ios-arrow-round-back-outline" size={40} color='black' /></TouchableOpacity>
       </View>
       <View style={{flexDirection: "row", flexWrap: 'wrap', justifyContent: 'center' }}>   
 			{flagArr}      

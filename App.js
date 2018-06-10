@@ -2,7 +2,7 @@
     // d9162d32-0fb6-4da1-a0a0-d5b96a3757fe
     console.disableYellowBox = true
 import React, { Component } from 'react';
-import { Animated, AppRegistry, AsyncStorage, Button, NetInfo, Platform, StyleSheet, Image, Text, View, ProgressViewIOS, TouchableOpacity } from 'react-native';
+import { Animated, AppRegistry, AppState, AsyncStorage, Button, NetInfo, Platform, StyleSheet, Image, Text, View, ProgressViewIOS, TouchableOpacity } from 'react-native';
 import BackgroundFetch from "react-native-background-fetch";
 import * as firebase from 'firebase';
 import { Calendar, CalendarList } from 'react-native-calendars' 
@@ -242,7 +242,7 @@ export default class App extends Component {
       }
     super(props);    
       this.state={
-        test: 'A',
+        appState: AppState.currentState,
         _markedDates: initialState,
         col: 'white',
         daysInEU: 0,
@@ -255,6 +255,7 @@ export default class App extends Component {
       this.calcDays = this.calcDays.bind(this)
       this.writeUserData = this.writeUserData.bind(this)
       this.checkToday = this.checkToday.bind(this)
+      this._handleAppStateChange = this._handleAppStateChange.bind(this)
   } 
   writeUserData(uid, mkd, wdi, wdl) {
       console.log('clicked')
@@ -267,7 +268,7 @@ export default class App extends Component {
       }, () => {
       AsyncStorage.setItem('key', JSON.stringify({uid: this.state.uid, markedDates: this.state._markedDates, daysInEU: this.state.daysInEU, daysLeft: this.state.daysLeft}))
       	AsyncStorage.getItem('key', (err, result) => {
-      		console.log(result)
+      	/*	console.log(result)*/
     		});
       });
     } 
@@ -310,12 +311,10 @@ export default class App extends Component {
       if(mds[mkds].selected) {
         selectedArray.push(mds[mkds])
       }
-      console.log(selectedArray)
+   
       this.setState({
         daysInEU: selectedArray.length,
         daysLeft: 90 - selectedArray.length
-      }, () => {
-        this.writeUserData(this.state.uid, this.state._markedDates, this.state.daysInEU, this.state.daysLeft)
       })
     }
   } 
@@ -365,6 +364,19 @@ export default class App extends Component {
        throw error
     }); 
   }
+    _handleAppStateChange = (nextAppState) => {
+    if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
+      console.log('App has come to the foreground!')
+    } if (this.state.appState  === 'active' && nextAppState.match(/inactive|background/) ) {
+      console.log('App has gone to background!')
+      this.writeUserData(this.state.uid, this.state.daysInEU, this.state.daysLeft, this.state._markedDates)
+    }
+    this.setState({appState: nextAppState});
+  }
+  componentWillUnmount() {
+    AppState.removeEventListener('change', this._handleAppStateChange);
+  }
+
   componentWillMount() {
   	 this.checkToday()
 NetInfo.getConnectionInfo().then((connectionInfo) => {
@@ -413,18 +425,18 @@ NetInfo.addEventListener(
 )      
         }.bind(this))
      AsyncStorage.getItem('key', (err, result) => {
-     	console.log(result)
+   /*  	console.log(result)*/
       this.setState({
       	daysInEU: JSON.parse(result).daysInEU,
       	daysLeft: JSON.parse(result).daysLeft,
-      	lastDay: moment().add(JSON.parse(result).daysLeft, 'days').format(_format),
+      	lastDay: moment().add(JSON.parse(result).daysLeft, 'days').format('MMMM Do YYYY'),
       	_markedDates: JSON.parse(result).markedDates
       });
     });
 
   }
     componentDidMount() {
-    	console.log(this)
+     AppState.addEventListener('change', this._handleAppStateChange);   
 
 // authenticate user and get initial snapshot  
   firebase.auth().signInAnonymously()
@@ -506,11 +518,12 @@ NetInfo.addEventListener(
 	        		<TouchableOpacity onPress={() => navigate('AnimDemo')}><Icon name="ios-information-circle-outline" size={30} color="#F6FEAC" /></TouchableOpacity>
 	        	</View>
 	    	   <View style={{flex: .20 , marginLeft: 18}}>
-	        		<TouchableOpacity onPress={() => navigate('Intro')}><Icon name="ios-menu-outline" size={30} color="white" /></TouchableOpacity>
+	        		<TouchableOpacity onPress={() => navigate('Settings')}><Icon name="ios-settings-outline" size={30} color="#F6FEAC" /></TouchableOpacity>
 	        	</View>
 	    	   <View style={{flex: .20 , marginLeft: 18}}>
-	        		<TouchableOpacity onPress={() => navigate('Settings')}><Icon name="ios-notifications-outline" size={30} color="#F6FEAC" /></TouchableOpacity>
+	        		<TouchableOpacity onPress={() => navigate('Intro')}><Icon name="ios-menu-outline" size={30} color="black" /></TouchableOpacity>
 	        	</View>
+
 
         	</View>
 
@@ -531,7 +544,6 @@ NetInfo.addEventListener(
       <View style={{marginTop: 24, marginBottom: 24}}><ProgressViewIOS  progressTintColor='red' trackTintColor='green' progress={this.state.daysInEU / 90}/></View>
       <View>
            <CalendarList
-
                 horizontal={true}
                 style={{marginTop: 1}}           
                 theme={{ calendarBackground: 'black', monthTextColor: 'white', textDisabledColor: 'gray', selectedDayTextColor: 'red'}}
@@ -541,16 +553,13 @@ NetInfo.addEventListener(
                 futureScrollRange={0}
                 onDayPress={this.onDaySelect}
                 markedDates={this.state._markedDates}
-                markingType={'period'}
-
-                
+                markingType={'period'}               
             /> 
         </View>
         <View style={{flex: 1, flexDirection: 'column'}}>
          <View style={{alignItems: 'center', marginBottom: 6}}><Text style={{fontSize: 14, color: 'gray'}}>You can stay until</Text></View>
         <View style={{alignItems: 'center', marginBottom: 8}}><Text style={{color: '#F6FEAC', fontSize: 18, fontWeight: 'bold'}}>{this.state.lastDay}</Text></View>
         </View>
-        <View style={{alignItems: 'center'}}><Text style={{color: this.state.col}}>{this.state.timeNow}</Text></View>
       </View>
     );
   }
