@@ -36,9 +36,7 @@
 		</dict>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>This application needs to know if you are in the Schengen area.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Giving Freschen background rights means you don't have to open it every day.</string>
+	<string>Freschen checks to see if you are in a Schengen country</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Entypo.ttf</string>
@@ -53,13 +51,6 @@
 		<string>SimpleLineIcons.ttf</string>
 		<string>Zocial.ttf</string>
 	</array>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>fetch</string>
-		<string>location</string>
-	</array>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>

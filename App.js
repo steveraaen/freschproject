@@ -3,7 +3,6 @@
     console.disableYellowBox = true
 import React, { Component } from 'react';
 import { Animated, AppRegistry, AppState, AsyncStorage, Button, NetInfo, Platform, StyleSheet, Image, Text, View, ProgressViewIOS, TouchableOpacity } from 'react-native';
-import BackgroundFetch from "react-native-background-fetch";
 import * as firebase from 'firebase';
 import { Calendar, CalendarList } from 'react-native-calendars' 
 import { StackNavigator, } from 'react-navigation';
@@ -210,11 +209,7 @@ var countries = [
 {flag: require("./utils/png/yemen.png"), name: "Yemen", schengen: false, europe: false},
 {flag: require("./utils/png/zambia.png"), name: "Zambia", schengen: false, europe: false},
 {flag: require("./utils/png/zimbabwe.png"), name: "Zimbabwe", schengen: false, europe: false}
-]
-
-//NSLocationAlwaysAndWhenInUseUsageDescription and NSLocationWhenInUseUsageDescription
-
-
+]//NSLocationAlwaysAndWhenInUseUsageDescription and NSLocationWhenInUseUsageDescription
 
 const _format = 'YYYY-MM-DD'
 const _today = moment().format(_format)
@@ -257,8 +252,8 @@ export default class App extends Component {
       this.checkToday = this.checkToday.bind(this)
       this._handleAppStateChange = this._handleAppStateChange.bind(this)
   } 
-  writeUserData(uid, mkd, wdi, wdl) {
-      console.log('clicked')
+  writeUserData(uid, wdi, wdl, mkd) {
+      console.log(mkd)
       database.ref('users/' + uid).set({
          uid: uid,
         markedDates: mkd,
@@ -422,18 +417,19 @@ NetInfo.addEventListener(
       (error) => this.setState({ error: error.message }),
       { enableHighAccuracy: true,  distanceFilter: 100 },
 
-)      
+)
         }.bind(this))
+        if(this.state.uid) {
      AsyncStorage.getItem('key', (err, result) => {
-   /*  	console.log(result)*/
+     	console.log(result)
       this.setState({
-      	daysInEU: JSON.parse(result).daysInEU,
-      	daysLeft: JSON.parse(result).daysLeft,
-      	lastDay: moment().add(JSON.parse(result).daysLeft, 'days').format('MMMM Do YYYY'),
-      	_markedDates: JSON.parse(result).markedDates
+      	daysInEU: JSON.parse(result).in,
+      	daysLeft: JSON.parse(result).left,
+      	lastDay: moment().add(JSON.parse(result).left, 'days').format('MMMM Do YYYY'),
+      	_markedDates: JSON.parse(result).md
       });
     });
-
+}
   }
     componentDidMount() {
      AppState.addEventListener('change', this._handleAppStateChange);   
@@ -512,27 +508,25 @@ NetInfo.addEventListener(
 
       <View style={styles.container}>
         
-        <View style={{flex: 1, flexDirection: 'row', flexWrap: 'wrap', marginTop: 32, marginBottom: 6}}>
+        <View style={{flexDirection: 'row', flexWrap: 'wrap', marginTop: 22,  height: 28}}>
 
 	         <View style={{flex: .20 , marginLeft: 18}}>
-	        		<TouchableOpacity onPress={() => navigate('AnimDemo')}><Icon name="ios-information-circle-outline" size={30} color="#F6FEAC" /></TouchableOpacity>
+	        		<TouchableOpacity onPress={() => navigate('AnimDemo')}><Icon name="ios-information-circle-outline" size={24} color="#F6FEAC" /></TouchableOpacity>
 	        	</View>
 	    	   <View style={{flex: .20 , marginLeft: 18}}>
-	        		<TouchableOpacity onPress={() => navigate('Settings')}><Icon name="ios-settings-outline" size={30} color="#F6FEAC" /></TouchableOpacity>
+	        		<TouchableOpacity onPress={() => navigate('Settings')}><Icon name="ios-settings-outline" size={24} color="#F6FEAC" /></TouchableOpacity>
 	        	</View>
 	    	   <View style={{flex: .20 , marginLeft: 18}}>
-	        		<TouchableOpacity onPress={() => navigate('Intro')}><Icon name="ios-menu-outline" size={30} color="black" /></TouchableOpacity>
+	        		<TouchableOpacity onPress={() => navigate('Intro')}><Icon name="ios-menu-outline" size={24} color="black" /></TouchableOpacity>
 	        	</View>
-
-
         	</View>
 
-        <View style={{flexDirection: 'row', justifyContent: 'center', height:40}}> 
+        <View style={{flexDirection: 'row', justifyContent: 'center', height:38}}> 
           <View style={{paddingBottom: 6}}><Text style={{fontSize: 30, fontWeight: 'bold', color: 'white'}}>{this.state.ctry}</Text></View>
           <View style={{marginLeft: 20, marginTop: 4}}><TouchableOpacity onPress={() => this.checkToday()}><Image source={this.state.flag} style={{width: 30, height: 30}}/></TouchableOpacity></View>
         </View>
       
-        <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 28}}>
+        <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 12}}>
         <View style={{flex: .5}}><Text style={{color: '#F6FEAC', fontSize: 18, textAlign: 'center'}}>Days In</Text></View>
         <View style={{flex: .5}}><Text style={{color: '#F6FEAC', fontSize: 18, textAlign: 'center'}}>Days Left</Text></View>
         </View>
@@ -541,11 +535,11 @@ NetInfo.addEventListener(
         <View style={{flex: .5}}><Text style={{color: 'white', fontSize: 24, textAlign: 'center'}}>{this.state.daysLeft}</Text></View>
         </View>
       
-      <View style={{marginTop: 24, marginBottom: 24}}><ProgressViewIOS  progressTintColor='red' trackTintColor='green' progress={this.state.daysInEU / 90}/></View>
+      <View style={{marginTop: 24, marginBottom: 20}}><ProgressViewIOS  progressTintColor='red' trackTintColor='green' progress={this.state.daysInEU / 90}/></View>
       <View>
            <CalendarList
                 horizontal={true}
-                style={{marginTop: 1}}           
+                style={{marginTop: 1, height: 320}}           
                 theme={{ calendarBackground: 'black', monthTextColor: 'white', textDisabledColor: 'gray', selectedDayTextColor: 'red'}}
                 pastScrollRange={6}
               	 minDate={moment().subtract(180, 'days').format(_format)}
@@ -558,7 +552,7 @@ NetInfo.addEventListener(
         </View>
         <View style={{flex: 1, flexDirection: 'column'}}>
          <View style={{alignItems: 'center', marginBottom: 6}}><Text style={{fontSize: 14, color: 'gray'}}>You can stay until</Text></View>
-        <View style={{alignItems: 'center', marginBottom: 8}}><Text style={{color: '#F6FEAC', fontSize: 18, fontWeight: 'bold'}}>{this.state.lastDay}</Text></View>
+        <View style={{alignItems: 'center', marginBottom: 8}}><Text style={{color: '#F6FEAC', fontSize: 16, fontWeight: 'bold'}}>{moment().add(this.state.daysLeft, 'days').format('dddd, MMMM Do YYYY')}</Text></View>
         </View>
       </View>
     );

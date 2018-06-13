@@ -316,6 +316,7 @@ export default class Intro extends Component {
 	  blockTextb: {
 	    color: '#F6FEAC', 
 	    fontSize:40, 
+	    letterSpacing: 6,
 	    textAlign: 'center'
 	  },
 	  testa:{
