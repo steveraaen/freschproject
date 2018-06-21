@@ -2,13 +2,14 @@
     // d9162d32-0fb6-4da1-a0a0-d5b96a3757fe
     console.disableYellowBox = true
 import React, { Component } from 'react';
-import { Animated, AppRegistry, AppState, AsyncStorage, Button, NetInfo, Platform, StyleSheet, Image, Text, View, ProgressViewIOS, TouchableOpacity } from 'react-native';
+import { Animated, AppRegistry, AppState, AsyncStorage, Button, Modal, NetInfo, Platform, StyleSheet, Image, Text, View, ProgressViewIOS, TouchableOpacity } from 'react-native';
 import * as firebase from 'firebase';
 import { Calendar, CalendarList } from 'react-native-calendars' 
 import { StackNavigator, } from 'react-navigation';
 import Icon from 'react-native-vector-icons/Ionicons';
 import moment from 'moment';
 import axios from 'axios';
+import BackgroundTimer from 'react-native-background-timer'
 import Settings from './Settings.js';
 import AnimDemo from './AnimDemo.js';
 import Intro from './Intro.js';
@@ -154,7 +155,7 @@ var countries = [
 {flag: require("./utils/png/paraguay.png"), name: "Paraguay", schengen: false, europe: false},
 {flag: require("./utils/png/peru.png"), name: "Peru", schengen: false, europe: false},
 {flag: require("./utils/png/philippines.png"), name: "Philippines", schengen: false, europe: false},
-{flag: require("./utils/png/united-nations.png"), name: "Poland", schengen: true, europe: true, colors:['white', 'red']},
+{flag: require("./utils/png/republic-of-poland.png"), name: "Poland", schengen: true, europe: true, colors:['white', 'red']},
 {flag: require("./utils/png/portugal.png"), name: "Portugal", schengen: true, europe: true, colors: ['red', 'green']},
 {flag: require("./utils/png/puerto-rico.png"), name: "Puerto Rico", schengen: false, europe: false},
 {flag: require("./utils/png/qatar.png"), name: "Qatar", schengen: false, europe: false},
@@ -243,7 +244,8 @@ export default class App extends Component {
         daysInEU: 0,
         daysLeft: 90,
         curIn: false,
-        fadeAnim:  new Animated.Value(0)
+        fadeAnim:  new Animated.Value(0),
+        todaysDate: moment().format('dddd, MMMM Do YYYY')
       }
       this.revGeocode = this.revGeocode.bind(this)
       this.onDaySelect = this.onDaySelect.bind(this)
@@ -253,23 +255,24 @@ export default class App extends Component {
       this._handleAppStateChange = this._handleAppStateChange.bind(this)
   } 
   writeUserData(uid, wdi, wdl, mkd) {
-      console.log(mkd)
+  	AsyncStorage.getItem('key', (err, res) => {
+  		console.log(res)
+  	})
+      console.log('writeUserData called')
       database.ref('users/' + uid).set({
          uid: uid,
         markedDates: mkd,
         daysInEU: wdi,
         daysLeft: wdl,
-        lastDay: moment().add(wdl, 'days').format('MMMM Do YYYY')
+        lastDay: moment().add(wdl, 'days').format('MMMM Do YYYY'),
       }, () => {
       AsyncStorage.setItem('key', JSON.stringify({uid: this.state.uid, markedDates: this.state._markedDates, daysInEU: this.state.daysInEU, daysLeft: this.state.daysLeft}))
-      	AsyncStorage.getItem('key', (err, result) => {
-      	/*	console.log(result)*/
-    		});
       });
     } 
   checkToday() {
+  	console.log('checkToday1')
        navigator.geolocation.getCurrentPosition(function(pos) {
-            var { longitude, latitude, accuracy, heading } = pos.coords
+           
             this.setState({
                 uLongitude: pos.coords.longitude,
                 uLatitude: pos.coords.latitude,
@@ -280,8 +283,9 @@ export default class App extends Component {
                 col: 'yellow',
                 timeNow: moment().format('h:mm:ss a')
             }, () => this.revGeocode(this.state.deviceLat, this.state.deviceLng, () => {
+      
             	this.calcDays()
-            }))
+            },))
 		}.bind(this))
   }
   onDaySelect(day) { 
@@ -313,19 +317,19 @@ export default class App extends Component {
       })
     }
   } 
-    revGeocode(lat, lng) {      
-    var lat= parseFloat(this.state.uLatitude).toFixed(6); 
+    revGeocode(lat, lng) {  
+    	console.log('revGeocode')
+    	var lat= parseFloat(this.state.uLatitude).toFixed(6); 
       var lng= parseFloat(this.state.uLatitude).toFixed(6) ;
-
+      var histObj = {}
+      var histArray = []
      return axios.get('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + parseFloat(this.state.uLatitude).toFixed(6) +',' + parseFloat(this.state.uLongitude).toFixed(6) + '&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs', {
         }).then((doc) => {
 
         for (let i = 0; i < countries.length; i++) {
           for(let j = 0; j < doc.data.results.length; j++)
-
           if(countries[i].name === doc.data.results[j].formatted_address) {
-            var cctry = countries[i]
-   
+            var cctry = countries[i]  
            var curOut = !cctry.europe && !cctry.schengen;
            var curIn = cctry.schengen
            var curNear = !cctry.schengen && cctry.europe
@@ -336,6 +340,24 @@ export default class App extends Component {
            		var curIOColor = 'green'
            	}
 
+					AsyncStorage.getItem('locations', (err, result) => {
+						      if(result === null) {
+						        histArray = []
+						      } else {
+						        histArray = JSON.parse(result)
+						      } 
+						      console.log(result)
+						      histArray.push(histObj)
+						        AsyncStorage.setItem('locations', JSON.stringify(histArray));
+						    })
+	            
+
+
+           	histObj.ctry = cctry.name
+           	histObj.day = moment().format('MMMM Do YYYY')
+           	histObj.flag = flag
+           	histArray.push(histObj)
+
            this.setState({
               ctry: cctry.name,
               flag: flag,
@@ -343,12 +365,12 @@ export default class App extends Component {
               curIn: curIn,
               curIOColor: curIOColor,
               curNear: curNear,
-                  }, () => {
-                  		this.setState({_markedDates: {...this.state._markedDates, ...{[_today]: {selected: this.state.curIn, textColor: this.state.curIOColor}} }})
-                  })
-
-                  }
-                }
+              histArray: histArray
+	            }, () => {
+	            		this.setState({_markedDates: {...this.state._markedDates, ...{[_today]: {selected: this.state.curIn, textColor: this.state.curIOColor }},histArray: histArray }})
+	            })
+	            }
+	          }
           this.setState({            
             address:  doc.data.results[0].formatted_address.split(",")[0] + ", " + doc.data.results[0].formatted_address.split(",")[1],
             latitude: doc.data.results[0].geometry.location[1],
@@ -371,25 +393,9 @@ export default class App extends Component {
   componentWillUnmount() {
     AppState.removeEventListener('change', this._handleAppStateChange);
   }
-
   componentWillMount() {
+ 
   	 this.checkToday()
-NetInfo.getConnectionInfo().then((connectionInfo) => {
-  console.log('Initial, type: ' + connectionInfo.type + ', effectiveType: ' + connectionInfo.effectiveType);
-});
-function handleFirstConnectivityChange(connectionInfo) {
-  console.log('First change, type: ' + connectionInfo.type + ', effectiveType: ' + connectionInfo.effectiveType);
-  NetInfo.removeEventListener(
-    'connectionChange',
-    handleFirstConnectivityChange
-  );
-}
-NetInfo.addEventListener(
-  'connectionChange',
-  handleFirstConnectivityChange
-);
-
-
         navigator.geolocation.getCurrentPosition(function(pos) {
             var { longitude, latitude, accuracy, heading } = pos.coords
             this.setState({
@@ -400,24 +406,9 @@ NetInfo.addEventListener(
                 deviceLng: pos.coords.longitude,
                 deviceLat: pos.coords.latitude,
                 loading: false
+            }, () => {
+            	this.revGeocode(this.state.deviceLat, this.state.deviceLng)
             })
-      this.watchId = navigator.geolocation.watchPosition(
-      (position) => {
-            this.setState({
-            	position: position,
-                uLatitude: position.coords.latitude,
-                uLongitude: position.coords.longitude,
-                uPosition: position.coords,
-                deviceLng: pos.coords.longitude,
-                deviceLat: pos.coords.latitude,
-                timeNow: moment().format('h:mm:ss a'),
-         		 error: null,
-        },() => this.revGeocode(this.state.deviceLat, this.state.deviceLng));      
-      },
-      (error) => this.setState({ error: error.message }),
-      { enableHighAccuracy: true,  distanceFilter: 100 },
-
-)
         }.bind(this))
         if(this.state.uid) {
      AsyncStorage.getItem('key', (err, result) => {
@@ -432,6 +423,17 @@ NetInfo.addEventListener(
 }
   }
     componentDidMount() {
+    	AsyncStorage.getAllKeys((keys)=> console.log(keys))
+        BackgroundTimer.runBackgroundTimer(() => { 
+      	this.checkToday()
+			AsyncStorage.getItem('locations', (err, resu) => {
+				console.log(resu)
+			})
+      }, 
+  60000);
+
+
+
      AppState.addEventListener('change', this._handleAppStateChange);   
 
 // authenticate user and get initial snapshot  
@@ -440,7 +442,7 @@ NetInfo.addEventListener(
   .then(() => {
     var database = firebase.database()
     const uid = firebase.auth().currentUser.uid
-    console.log(uid)
+
     database.ref('users/' + uid).once('value', (snapshot) =>{
      if(this.state.curIn) {
       	var cIn = true
@@ -463,7 +465,7 @@ NetInfo.addEventListener(
           markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn}} }
 
         })
-        AsyncStorage.setItem('key', JSON.stringify({in:0, left:90, md:{...this.state._markedDates, ...{[_today]: {selected: cIn}} }}))
+        AsyncStorage.setItem('key', JSON.stringify({in:0, left:90, md:{...this.state._markedDates, ...{[_today]: {selected: cIn}} }, history: this.state.histArray}))
 
       }
 
@@ -514,7 +516,7 @@ NetInfo.addEventListener(
 	        		<TouchableOpacity onPress={() => navigate('AnimDemo')}><Icon name="ios-information-circle-outline" size={24} color="#F6FEAC" /></TouchableOpacity>
 	        	</View>
 	    	   <View style={{flex: .20 , marginLeft: 18}}>
-	        		<TouchableOpacity onPress={() => navigate('Settings')}><Icon name="ios-settings-outline" size={24} color="#F6FEAC" /></TouchableOpacity>
+	        		<TouchableOpacity onPress={() => navigate('Settings', {histry: this.state.histArray})}><Icon name="ios-settings-outline" size={24} color="#F6FEAC" /></TouchableOpacity>
 	        	</View>
 	    	   <View style={{flex: .20 , marginLeft: 18}}>
 	        		<TouchableOpacity onPress={() => navigate('Intro')}><Icon name="ios-menu-outline" size={24} color="black" /></TouchableOpacity>

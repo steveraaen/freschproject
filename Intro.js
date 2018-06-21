@@ -145,7 +145,7 @@ var countries = [
 {flag: require("./utils/png/paraguay.png"), name: "Paraguay", schengen: false, europe: false},
 {flag: require("./utils/png/peru.png"), name: "Peru", schengen: false, europe: false},
 {flag: require("./utils/png/philippines.png"), name: "Philippines", schengen: false, europe: false},
-{flag: require("./utils/png/united-nations.png"), name: "Poland", schengen: true, europe: true, colors:['white', 'red']},
+{flag: require("./utils/png/republic-of-poland.png"), name: "Poland", schengen: true, europe: true, colors:['white', 'red']},
 {flag: require("./utils/png/portugal.png"), name: "Portugal", schengen: true, europe: true, colors: ['red', 'green']},
 {flag: require("./utils/png/puerto-rico.png"), name: "Puerto Rico", schengen: false, europe: false},
 {flag: require("./utils/png/qatar.png"), name: "Qatar", schengen: false, europe: false},

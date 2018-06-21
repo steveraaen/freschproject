@@ -17,6 +17,8 @@ export default class Settings extends Component {
 	}
 	componentWillMount() {
 
+
+
 		const format = 'YYYY-MM-DD'
 		var mdArr = []
 		for(let i = 1; i < 180; i++) {
@@ -27,6 +29,24 @@ export default class Settings extends Component {
 	}
 
 	render() {
+		var hArray = this.props.navigation.state.params.histry.map((day, idx) => {
+			return (<View  key={idx} style={{flex: 1, flexDirection: 'row', justifyContent: 'center'}}>
+					<View style={{marginRight: 6}}>
+						<Text style={{fontSize:12, color: 'white'}}>
+						{day.day}
+						</Text>
+						</View>
+						<View style={{marginRight: 6}}>
+						<Text style={{fontSize:12, color: 'white'}}>
+						{day.ctry}
+						</Text>
+					 </View>
+					 <View>
+					 <Image style={{width: 20,height: 20}} source={day.flag} />
+					 	
+					 </View>
+					 </View>)
+		})
 		const { navigate } = this.props.navigation;
 		const styles = StyleSheet.create({
 		})
@@ -37,22 +57,9 @@ export default class Settings extends Component {
 					<TouchableOpacity onPress={() => navigate('App')}><Icon name="ios-arrow-round-back-outline" size={30} color="blue" /></TouchableOpacity>
 				</View>
 				<Text style={{fontSize: 20, color: 'white'}}>Settings</Text>
-				<View style={{flex:1}}>
-           <CalendarList
-                horizontal={true}
-                style={{marginTop: 1}}           
-                theme={{ calendarBackground: 'black', textDisabledColor: 'gray', dayTextColor: 'green', monthTextColor: 'white'}}
-                pastScrollRange={6}
-              	 minDate={moment().subtract(180, 'days').format('YYYY-MM-DD')}
-              	 maxDate={moment().format('YYYY-MM-DD')}                
-                futureScrollRange={0}
-                markedDates={this.state.ates}			
-              
-              
-            /> 
-				</View>
+
 				<View style={{flex: 1}}>
-					
+					{hArray}
 				</View>
 			</View>
 			)
