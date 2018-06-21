@@ -348,6 +348,7 @@ export default class App extends Component {
 						      } 
 						      console.log(result)
 						      histArray.push(histObj)
+						      this.setState({histArray: histArray})
 						        AsyncStorage.setItem('locations', JSON.stringify(histArray));
 						    })
 	            
@@ -356,6 +357,7 @@ export default class App extends Component {
            	histObj.ctry = cctry.name
            	histObj.day = moment().format('MMMM Do YYYY')
            	histObj.flag = flag
+           	AsyncStorage.setItem('hObj', JSON.stringify(histObj))
            	histArray.push(histObj)
 
            this.setState({
@@ -427,7 +429,7 @@ export default class App extends Component {
         BackgroundTimer.runBackgroundTimer(() => { 
       	this.checkToday()
 			AsyncStorage.getItem('locations', (err, resu) => {
-				console.log(resu)
+				this.setState({histArray: resu})
 			})
       }, 
   60000);
@@ -465,7 +467,7 @@ export default class App extends Component {
           markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn}} }
 
         })
-        AsyncStorage.setItem('key', JSON.stringify({in:0, left:90, md:{...this.state._markedDates, ...{[_today]: {selected: cIn}} }, history: this.state.histArray}))
+        AsyncStorage.setItem('key', JSON.stringify({in:0, left:90, md:{...this.state._markedDates, ...{[_today]: {selected: cIn}} }}))
 
       }
 
