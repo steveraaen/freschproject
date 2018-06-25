@@ -567,6 +567,7 @@ BackgroundTimer.stop();*/
               	 maxDate={moment().format(_format)}                
                 futureScrollRange={0}
                 onDayPress={this.onDaySelect}
+                onDayLongPress={console.log('hello')}
                 markedDates={this.state._markedDates}
                 markingType={'period'}               
             /> 
