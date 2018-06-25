@@ -290,12 +290,14 @@ export default class App extends Component {
   }
   onDaySelect(day) { 
   	console.log(day)
+
       const _selectedDay = moment(day.dateString).format(_format);      
       let selected = true;  
       if (this.state._markedDates[_selectedDay]) {
         selected = !this.state._markedDates[_selectedDay].selected;
+        
       }
-
+      console.log(typeof(_selectedDay))
       const updatedMarkedDates = {...this.state._markedDates, ...{ [_selectedDay]: { selected } } }
       console.log(updatedMarkedDates)
       this.setState({ _markedDates: updatedMarkedDates }, () =>
@@ -355,9 +357,12 @@ export default class App extends Component {
 
 
            	histObj.ctry = cctry.name
-           	histObj.day = moment().format('MMMM Do YYYY')
+           	histObj.day = moment().format('MMMM Do YYYY, h:mm a')
+           	histObj.dayMatcher = moment().format('MMMM Do YYYY')
            	histObj.flag = flag
            	AsyncStorage.setItem('hObj', JSON.stringify(histObj))
+           	console.log(AsyncStorage.getItem('hObj'))
+        
            	histArray.push(histObj)
 
            this.setState({
@@ -384,6 +389,7 @@ export default class App extends Component {
     }); 
   }
     _handleAppStateChange = (nextAppState) => {
+
     if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
       console.log('App has come to the foreground!')
     } if (this.state.appState  === 'active' && nextAppState.match(/inactive|background/) ) {
@@ -396,7 +402,7 @@ export default class App extends Component {
     AppState.removeEventListener('change', this._handleAppStateChange);
   }
   componentWillMount() {
- 
+/* AsyncStorage.clear()*/
   	 this.checkToday()
         navigator.geolocation.getCurrentPosition(function(pos) {
             var { longitude, latitude, accuracy, heading } = pos.coords
@@ -425,15 +431,23 @@ export default class App extends Component {
 }
   }
     componentDidMount() {
-    	AsyncStorage.getAllKeys((keys)=> console.log(keys))
+   
         BackgroundTimer.runBackgroundTimer(() => { 
       	this.checkToday()
 			AsyncStorage.getItem('locations', (err, resu) => {
 				this.setState({histArray: resu})
 			})
       }, 
-  60000);
+  10000);
+/*BackgroundTimer.start();
 
+setTimeout(()=> { 
+	this.checkToday()
+		AsyncStorage.getItem('locations', (err, resu) => {
+		this.setState({histArray: resu})
+			})
+}, 20000)
+BackgroundTimer.stop();*/
 
 
      AppState.addEventListener('change', this._handleAppStateChange);   
@@ -506,10 +520,9 @@ export default class App extends Component {
         toValue: 1,                   // Animate to opacity: 1 (opaque)
         duration: 10000,              // Make it take a while
       }
-    ).start();   
+    ).start(); 
+
     return (
-
-
       <View style={styles.container}>
         
         <View style={{flexDirection: 'row', flexWrap: 'wrap', marginTop: 22,  height: 28}}>

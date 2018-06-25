@@ -1,6 +1,6 @@
     console.disableYellowBox = true
 import React, { Component } from 'react';
-import { Animated, Button, Platform, StyleSheet, Image, Text, View, ProgressViewIOS, TouchableOpacity } from 'react-native';
+import { Animated, Button, Platform, StyleSheet, Image, ScrollView, Text, View, ProgressViewIOS, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons'
 import { CalendarList, Calendar } from 'react-native-calendars' 
 import moment from 'moment'
@@ -56,11 +56,11 @@ export default class Settings extends Component {
 				<View style={{marginTop: 32}}>
 					<TouchableOpacity onPress={() => navigate('App')}><Icon name="ios-arrow-round-back-outline" size={30} color="blue" /></TouchableOpacity>
 				</View>
-				<Text style={{fontSize: 20, color: 'white'}}>Settings</Text>
+				<Text style={{fontSize: 20, color: 'white'}}>Recent Locations</Text>
 
-				<View style={{flex: 1}}>
+				<ScrollView style={{flex: 1}}>
 					{hArray}
-				</View>
+				</ScrollView>
 			</View>
 			)
 	}
