@@ -292,13 +292,17 @@ export default class App extends Component {
   	console.log(day)
 
       const _selectedDay = moment(day.dateString).format(_format);      
-      let selected = true;  
+      let selected = true; 
+    	let textColor = "green"
       if (this.state._markedDates[_selectedDay]) {
-        selected = !this.state._markedDates[_selectedDay].selected;
-        
-      }
-      console.log(typeof(_selectedDay))
-      const updatedMarkedDates = {...this.state._markedDates, ...{ [_selectedDay]: { selected } } }
+        selected = !this.state._markedDates[_selectedDay].selected;  
+        if(selected) {
+        	textColor = 'red'
+        }       
+      } 
+
+
+      const updatedMarkedDates = {...this.state._markedDates, ...{ [_selectedDay]: { selected: selected, textColor: textColor } } }
       console.log(updatedMarkedDates)
       this.setState({ _markedDates: updatedMarkedDates }, () =>
           this.calcDays(this.state._markedDates)
@@ -438,7 +442,7 @@ export default class App extends Component {
 				this.setState({histArray: resu})
 			})
       }, 
-  10000);
+  600000);
 /*BackgroundTimer.start();
 
 setTimeout(()=> { 
