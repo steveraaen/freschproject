@@ -249,20 +249,22 @@ export default class App extends Component {
         fadeAnim:  new Animated.Value(0),
         todaysDate: moment().format('dddd, MMMM Do YYYY')
       }
+
+	this.onLocation = this.onLocation.bind(this)
+	this.onMotionChange = this.onMotionChange.bind(this)
+	this.onActivityChange = this.onActivityChange.bind(this)
+	this.onProviderChange = this.onProviderChange.bind(this)
+	this.revGeocode = this.revGeocode.bind(this)
+	this.onDaySelect = this.onDaySelect.bind(this)
+	this.calcDays = this.calcDays.bind(this)
+	this.writeUserData = this.writeUserData.bind(this)
+	this.checkToday = this.checkToday.bind(this)
+	this._handleAppStateChange = this._handleAppStateChange.bind(this)
+
     BackgroundGeolocation.on('location', this.onLocation, this.onError);
     BackgroundGeolocation.on('motionchange', this.onMotionChange);
     BackgroundGeolocation.on('activitychange', this.onActivityChange);
     BackgroundGeolocation.on('providerchange', this.onProviderChange);
-    this.onLocation = this.onLocation.bind(this)
-    this.onMotionChange = this.onMotionChange.bind(this)
-    this.onActivityChange = this.onActivityChange.bind(this)
-    this.onProviderChange = this.onProviderChange.bind(this)
-      this.revGeocode = this.revGeocode.bind(this)
-      this.onDaySelect = this.onDaySelect.bind(this)
-      this.calcDays = this.calcDays.bind(this)
-      this.writeUserData = this.writeUserData.bind(this)
-      this.checkToday = this.checkToday.bind(this)
-      this._handleAppStateChange = this._handleAppStateChange.bind(this)
   } 
   writeUserData(uid, wdi, wdl, mkd) {
   	AsyncStorage.getItem('key', (err, res) => {
@@ -414,22 +416,27 @@ export default class App extends Component {
   }
   componentWillUnmount() {
     BackgroundGeolocation.removeListeners();
-   
+
   }
   onLocation(location) {
     console.log('- [event] location: ', location);
+    	this.revGeocode(location.coords.latitude, location.coords.longitude)
+    	this.setState({locationLat: location.coords.latitude, locationLng: location.coords.longitude})
   }
   onError(error) {
     console.warn('- [event] location error ', error);
   }
   onActivityChange(activity) {
     console.log('- [event] activitychange: ', activity);  // eg: 'on_foot', 'still', 'in_vehicle'
+   /* this.setState({activity: activity})*/
   }
   onProviderChange(provider) {
-    console.log('- [event] providerchange: ', provider);    
+    console.log('- [event] providerchange: ', provider); 
+  /*  this.setState({provider: provider})  */ 
   }
   onMotionChange(location) {
     console.log('- [event] motionchange: ', location.isMoving, location);
+  /*  this.setState({isMoving: location.isMoving})*/
   }
     
   
@@ -437,12 +444,23 @@ export default class App extends Component {
 
 
 BackgroundGeolocation.ready({
-  reset: true,  // <-- true to always apply the supplied config
-  distanceFilter: 10
+
+  distanceFilter: 10,
+	logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
+	stopOnTerminate: false,   // <-- Allow the background-service to continue tracking when user closes the app.
+	startOnBoot: true,
 }, (state) => {
   console.log('- BackgroundGeolocation is ready: ', state);
+    if (!state.enabled) {  // <-- current state provided to callback
+    
+    BackgroundGeolocation.start();
+  }
 });
+
 /* AsyncStorage.clear()*/
+
+  }
+    componentDidMount() {
   	 this.checkToday()
         navigator.geolocation.getCurrentPosition(function(pos) {
             var { longitude, latitude, accuracy, heading } = pos.coords
@@ -469,9 +487,6 @@ BackgroundGeolocation.ready({
       });
     });
 }
-  }
-    componentDidMount() {
-
    
 /*        BackgroundTimer.runBackgroundTimer(() => { 
       	this.checkToday()
