@@ -39,6 +39,8 @@
 	<string>By allowing access, you do not have to open Freschen for it to work</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Freschen needs to know if you are in the Schengen Area</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Accelerometer use increases battery efficiency by intelligently toggling location-tracking</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Entypo.ttf</string>
@@ -55,6 +57,7 @@
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>
+		<string>fetch</string>
 		<string>location</string>
 	</array>
 	<key>UIRequiredDeviceCapabilities</key>

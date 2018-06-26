@@ -1,20 +1,7 @@
-    //touch of evil  witness for the prosecution
-    // d9162d32-0fb6-4da1-a0a0-d5b96a3757fe
-    console.disableYellowBox = true
 import React, { Component } from 'react';
-import { Animated, AppRegistry, AppState, AsyncStorage, Button, Modal, NetInfo, Platform, StyleSheet, Image, Text, View, ProgressViewIOS, TouchableOpacity } from 'react-native';
-import * as firebase from 'firebase';
-import { Calendar, CalendarList } from 'react-native-calendars' 
-import { StackNavigator, } from 'react-navigation';
-import Icon from 'react-native-vector-icons/Ionicons';
-import moment from 'moment';
-import axios from 'axios';
-import BackgroundGeolocation from "react-native-background-geolocation";
-/*import BackgroundTimer from 'react-native-background-timer'*/
-import Settings from './Settings.js';
-import AnimDemo from './AnimDemo.js';
-import AnimatedDemo from './AnimatedDemo.js';
-import Intro from './Intro.js';
+import { Animated, AppRegistry, Easing, LayoutAnimation, Platform, StyleSheet, Image, Text, View, ProgressViewIOS, ScrollView, TouchableOpacity } from 'react-native';
+import Icon from 'react-native-vector-icons/Ionicons'
+
 var countries = [
 {flag: require("./utils/png/afghanistan.png"),name: "Afghanistan", schengen: false, europe: false},
 {flag: require("./utils/png/albania.png"), name: "Albania", schengen: false, europe: true, colors: ['black', 'red']},
@@ -212,432 +199,102 @@ var countries = [
 {flag: require("./utils/png/yemen.png"), name: "Yemen", schengen: false, europe: false},
 {flag: require("./utils/png/zambia.png"), name: "Zambia", schengen: false, europe: false},
 {flag: require("./utils/png/zimbabwe.png"), name: "Zimbabwe", schengen: false, europe: false}
-]//NSLocationAlwaysAndWhenInUseUsageDescription and NSLocationWhenInUseUsageDescription
+]
 
-const _format = 'YYYY-MM-DD'
-const _today = moment().format(_format)
-const _maxDate = _today
-const _minDate = moment().subtract(90, 'days').format(_format)
-// configure & initialize Firebase
-  var firebaseConfig = {
-    apiKey: "AIzaSyCpzqnDrYn_6D0QGdVlGXspkEOM2M5G-Jw",
-    authDomain: "schengentracker.firebaseapp.com",
-    databaseURL: "https://schengentracker.firebaseio.com",
-    projectId: "schengentracker",
-    storageBucket: "schengentracker.appspot.com",
-    messagingSenderId: "330964828818"
-  };
- const firebaseApp = firebase.initializeApp(firebaseConfig);
-database= firebase.database()
-
-export default class App extends Component {
-	    static navigationOptions = {
+export default class AnimatedDemo extends Component {
+        static navigationOptions = {
         header: null
-    }
-  constructor(props) {
-    initialState = {
-      [_today]: {selected: true}
-      }
-    super(props);    
-      this.state={
-        appState: AppState.currentState,
-        _markedDates: initialState,
-        col: 'white',
-        daysInEU: 0,
-        daysLeft: 90,
-        curIn: false,
-        fadeAnim:  new Animated.Value(0),
-        todaysDate: moment().format('dddd, MMMM Do YYYY')
-      }
-    BackgroundGeolocation.on('location', this.onLocation, this.onError);
-    BackgroundGeolocation.on('motionchange', this.onMotionChange);
-    BackgroundGeolocation.on('activitychange', this.onActivityChange);
-    BackgroundGeolocation.on('providerchange', this.onProviderChange);
-    this.onLocation = this.onLocation.bind(this)
-    this.onMotionChange = this.onMotionChange.bind(this)
-    this.onActivityChange = this.onActivityChange.bind(this)
-    this.onProviderChange = this.onProviderChange.bind(this)
-      this.revGeocode = this.revGeocode.bind(this)
-      this.onDaySelect = this.onDaySelect.bind(this)
-      this.calcDays = this.calcDays.bind(this)
-      this.writeUserData = this.writeUserData.bind(this)
-      this.checkToday = this.checkToday.bind(this)
-      this._handleAppStateChange = this._handleAppStateChange.bind(this)
-  } 
-  writeUserData(uid, wdi, wdl, mkd) {
-  	AsyncStorage.getItem('key', (err, res) => {
-  		console.log(res)
-  	})
-      console.log('writeUserData called')
-      database.ref('users/' + uid).set({
-         uid: uid,
-        markedDates: mkd,
-        daysInEU: wdi,
-        daysLeft: wdl,
-        lastDay: moment().add(wdl, 'days').format('MMMM Do YYYY'),
-      }, () => {
-      AsyncStorage.setItem('key', JSON.stringify({uid: this.state.uid, markedDates: this.state._markedDates, daysInEU: this.state.daysInEU, daysLeft: this.state.daysLeft}))
-      });
     } 
-  checkToday() {
-  	console.log('checkToday1')
-       navigator.geolocation.getCurrentPosition(function(pos) {
-           
-            this.setState({
-                uLongitude: pos.coords.longitude,
-                uLatitude: pos.coords.latitude,
-                uLnglat: [pos.coords.longitude, pos.coords.latitude],
-                uPosition: pos.coords,
-                deviceLng: pos.coords.longitude,
-                deviceLat: pos.coords.latitude,
-                col: 'yellow',
-                timeNow: moment().format('h:mm:ss a')
-            }, () => this.revGeocode(this.state.deviceLat, this.state.deviceLng, () => {
-      
-            	this.calcDays()
-            },))
-		}.bind(this))
-  }
-  onDaySelect(day) { 
-  	console.log(day)
-
-      const _selectedDay = moment(day.dateString).format(_format);      
-      let selected = true; 
-    	let textColor = "green"
-      if (this.state._markedDates[_selectedDay]) {
-        selected = !this.state._markedDates[_selectedDay].selected;  
-        if(selected) {
-        	textColor = 'red'
-        }       
-      } 
-
-
-      const updatedMarkedDates = {...this.state._markedDates, ...{ [_selectedDay]: { selected: selected, textColor: textColor } } }
-      console.log(updatedMarkedDates)
-      this.setState({ _markedDates: updatedMarkedDates }, () =>
-          this.calcDays(this.state._markedDates)
-        );
-  }
-
-  calcDays(mds) {
-    console.log(mds)
-    var selectedArray = []
-    for( let mkds in mds) {
-      if(mds[mkds].selected) {
-        selectedArray.push(mds[mkds])
-      }
-   
-      this.setState({
-        daysInEU: selectedArray.length,
-        daysLeft: 90 - selectedArray.length
-      })
-    }
+  constructor (props) {
+  	super(props)
+  	this.state={
+  		countries: countries
+  	}
+	this.animatedValue = new Animated.Value(0)
+	this.spinValue = new Animated.Value(0)
+  	this.animate = this.animate.bind(this)
   } 
-    revGeocode(lat, lng) {  
-    	console.log('revGeocode')
-    	var lat= parseFloat(this.state.uLatitude).toFixed(6); 
-      var lng= parseFloat(this.state.uLatitude).toFixed(6) ;
-      var histObj = {}
-      var histArray = []
-     return axios.get('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + parseFloat(this.state.uLatitude).toFixed(6) +',' + parseFloat(this.state.uLongitude).toFixed(6) + '&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs', {
-        }).then((doc) => {
-
-        for (let i = 0; i < countries.length; i++) {
-          for(let j = 0; j < doc.data.results.length; j++)
-          if(countries[i].name === doc.data.results[j].formatted_address) {
-            var cctry = countries[i]  
-           var curOut = !cctry.europe && !cctry.schengen;
-           var curIn = cctry.schengen
-           var curNear = !cctry.schengen && cctry.europe
-           var flag = countries[i].flag
-           if(curIn){
-           		var curIOColor = 'red'
-           	} else{
-           		var curIOColor = 'green'
-           	}
-
-					AsyncStorage.getItem('locations', (err, result) => {
-						      if(result === null) {
-						        histArray = []
-						      } else {
-						        histArray = JSON.parse(result)
-						      } 
-						      console.log(result)
-						      histArray.push(histObj)
-						      this.setState({histArray: histArray})
-						        AsyncStorage.setItem('locations', JSON.stringify(histArray));
-						    })
-	            
-
-
-           	histObj.ctry = cctry.name
-           	histObj.day = moment().format('MMMM Do YYYY, h:mm a')
-           	histObj.dayMatcher = moment().format('MMMM Do YYYY')
-           	histObj.flag = flag
-           	AsyncStorage.setItem('hObj', JSON.stringify(histObj))
-           	console.log(AsyncStorage.getItem('hObj'))
-        
-           	histArray.push(histObj)
-
-           this.setState({
-              ctry: cctry.name,
-              flag: flag,
-              curOut: curOut,
-              curIn: curIn,
-              curIOColor: curIOColor,
-              curNear: curNear,
-              histArray: histArray
-	            }, () => {
-	            		this.setState({_markedDates: {...this.state._markedDates, ...{[_today]: {selected: this.state.curIn, textColor: this.state.curIOColor }},histArray: histArray }})
-	            })
-	            }
-	          }
-          this.setState({            
-            address:  doc.data.results[0].formatted_address.split(",")[0] + ", " + doc.data.results[0].formatted_address.split(",")[1],
-            latitude: doc.data.results[0].geometry.location[1],
-            longitude: doc.data.results[0].geometry.location[0],
-            placeName: doc.data.results[0]
-          })
-        }).catch(function(error) {
-       throw error
-    }); 
+  animate (easing) {
+    this.animatedValue.setValue(0)
+      Animated.timing(
+        this.animatedValue,
+        {
+          toValue: 1, 
+          duration: 1500,
+          easing
+        }
+    ).start()
   }
-    _handleAppStateChange = (nextAppState) => {
 
-    if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
-      console.log('App has come to the foreground!')
-    } if (this.state.appState  === 'active' && nextAppState.match(/inactive|background/) ) {
-      console.log('App has gone to background!')
-      this.writeUserData(this.state.uid, this.state.daysInEU, this.state.daysLeft, this.state._markedDates)
-    }
-    this.setState({appState: nextAppState});
-  }
-  componentWillUnmount() {
-    BackgroundGeolocation.removeListeners();
-   
-  }
-  onLocation(location) {
-    console.log('- [event] location: ', location);
-  }
-  onError(error) {
-    console.warn('- [event] location error ', error);
-  }
-  onActivityChange(activity) {
-    console.log('- [event] activitychange: ', activity);  // eg: 'on_foot', 'still', 'in_vehicle'
-  }
-  onProviderChange(provider) {
-    console.log('- [event] providerchange: ', provider);    
-  }
-  onMotionChange(location) {
-    console.log('- [event] motionchange: ', location.isMoving, location);
-  }
-    
-  
-  componentWillMount() {
-
-
-BackgroundGeolocation.ready({
-  reset: true,  // <-- true to always apply the supplied config
-  distanceFilter: 10
-}, (state) => {
-  console.log('- BackgroundGeolocation is ready: ', state);
-});
-/* AsyncStorage.clear()*/
-  	 this.checkToday()
-        navigator.geolocation.getCurrentPosition(function(pos) {
-            var { longitude, latitude, accuracy, heading } = pos.coords
-            this.setState({
-                uLongitude: pos.coords.longitude,
-                uLatitude: pos.coords.latitude,
-                uLnglat: [pos.coords.longitude, pos.coords.latitude],
-                uPosition: pos.coords,
-                deviceLng: pos.coords.longitude,
-                deviceLat: pos.coords.latitude,
-                loading: false
-            }, () => {
-            	this.revGeocode(this.state.deviceLat, this.state.deviceLng)
-            })
-        }.bind(this))
-        if(this.state.uid) {
-     AsyncStorage.getItem('key', (err, result) => {
-     	console.log(result)
-      this.setState({
-      	daysInEU: JSON.parse(result).in,
-      	daysLeft: JSON.parse(result).left,
-      	lastDay: moment().add(JSON.parse(result).left, 'days').format('MMMM Do YYYY'),
-      	_markedDates: JSON.parse(result).md
-      });
-    });
-}
-  }
-    componentDidMount() {
-
-   
-/*        BackgroundTimer.runBackgroundTimer(() => { 
-      	this.checkToday()
-			AsyncStorage.getItem('locations', (err, resu) => {
-				this.setState({histArray: resu})
-			})
-      }, 
-  60000);*/
-/*BackgroundTimer.start();
-
-setTimeout(()=> { 
-	this.checkToday()
-		AsyncStorage.getItem('locations', (err, resu) => {
-		this.setState({histArray: resu})
-			})
-}, 20000)
-BackgroundTimer.stop();*/
-
-
-     AppState.addEventListener('change', this._handleAppStateChange);   
-
-// authenticate user and get initial snapshot  
-  firebase.auth().signInAnonymously()
-
-  .then(() => {
-    var database = firebase.database()
-    const uid = firebase.auth().currentUser.uid
-
-    database.ref('users/' + uid).once('value', (snapshot) =>{
-     if(this.state.curIn) {
-      	var cIn = true
-      }  else if(!this.state.curIn) {
-      	var cIn = false
-      }
-      if(!snapshot.val()) {
-      	
-		var mdArr = []
-		for(let i = 1; i < 180; i++) {
-			 mdArr.push({[moment().subtract(i, 'days').format(_format)]:{textColor: 'green', selected: false}})		
-		}
-		var newObj = Object.assign({}, ...mdArr)
-		this.setState({_markedDates: newObj})
-
-        database.ref('users/' + uid).set({
-          uid: uid,
-          daysInEU: 0,
-          daysLeft: 90,
-          markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn}} }
-
-        })
-        AsyncStorage.setItem('key', JSON.stringify({in:0, left:90, md:{...this.state._markedDates, ...{[_today]: {selected: cIn}} }}))
-
-      }
-
-/*       database.ref('users/' + this.state.uid).on('value', (snapshot) =>{
-         this.setState({
-          snp: snapshot.val(),
-          daysInEU: snapshot.val().daysInEU,
-          daysLeft: snapshot.val().daysLeft,
-          lastDay: moment().add(snapshot.val().daysLeft, 'days').format('MMMM Do YYYY'),
-          mkddts: snapshot.val().markedDates
-        }, () => {
-
-      this.setState({ _markedDates: this.state.mkddts }, () =>
-          this.calcDays(this.state._markedDates)
-        );
-        })
-         console.log(snapshot.val())
-      })    */   
-    })
-
-    this.setState({
-      authObj: firebase.auth(),
-      isAuthenticated: true,
-      uid: firebase.auth().currentUser.uid,
-    }, () => {
-
-    });
-  });
-  // Get geolocation
-  }
   render() {
-  	 const { navigate } = this.props.navigation;
-    Animated.timing(                  // Animate over time
-      this.state.fadeAnim,            // The animated value to drive
-      {
-        toValue: 1,                   // Animate to opacity: 1 (opaque)
-        duration: 10000,              // Make it take a while
-      }
-    ).start(); 
+  	const { navigate } = this.props.navigation;
 
-    return (
-      <View style={styles.container}>
-        
-        <View style={{flexDirection: 'row', flexWrap: 'wrap', marginTop: 22,  height: 28}}>
+  	const marginLeft = this.animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 100]
+  })
+  	var ctryList=[]
+  
+  	for (let i=0; i < this.state.countries.length; i++) {
+  		if(this.state.countries[i].europe && !this.state.countries[i].schengen){
+  			this.state.countries[i].color = 'green'
+  		} else if (this.state.countries[i].europe && this.state.countries[i].schengen){
+  			this.state.countries[i].color = 'red'
+  		}
+  		if(this.state.countries[i].europe) {
 
-	         <View style={{flex: .20 , marginLeft: 18}}>
-	        		<TouchableOpacity onPress={() => navigate('AnimDemo')}><Icon name="ios-information-circle-outline" size={24} color="#F6FEAC" /></TouchableOpacity>
-	        	</View>
-	    	   <View style={{flex: .20 , marginLeft: 18}}>
-	        		<TouchableOpacity onPress={() => navigate('Settings', {histry: this.state.histArray})}><Icon name="ios-settings-outline" size={24} color="#F6FEAC" /></TouchableOpacity>
-	        	</View>
-	    	   <View style={{flex: .20 , marginLeft: 18}}>
-	        		<TouchableOpacity onPress={() => navigate('Intro')}><Icon name="ios-menu-outline" size={24} color="pink" /></TouchableOpacity>
-	        	</View>
-	    	   <View style={{flex: .20 , marginLeft: 18}}>
-	        		<TouchableOpacity onPress={() => navigate('AnimatedDemo')}><Icon name="ios-menu-outline" size={24} color="pink" /></TouchableOpacity>
-	        	</View>
-        	</View>
+  			ctryList.push(
+  				<Animated.View key= {i} style={[{flex: 1, flexDirection: 'row'}, {marginLeft}]}>
+  				<View style={{flex: .4}}>
+  					<Text style={{fontSize: 22, color: this.state.countries[i].color}}>{this.state.countries[i].name}</Text>
+  				</View>
+  				<View style={{flex: .2}}>
+  					<Image style={{width: 28,height: 28}} source={this.state.countries[i].flag} />
+  				</View>
+  				</Animated.View>
+  				)
+  		}
+  	}
 
-        <View style={{flexDirection: 'row', justifyContent: 'center', height:38}}> 
-          <View style={{paddingBottom: 6}}><Text style={{fontSize: 30, fontWeight: 'bold', color: 'white'}}>{this.state.ctry}</Text></View>
-          <View style={{marginLeft: 20, marginTop: 4}}><TouchableOpacity onPress={() => this.checkToday()}><Image source={this.state.flag} style={{width: 30, height: 30}}/></TouchableOpacity></View>
-        </View>
-      
-        <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 12}}>
-        <View style={{flex: .5}}><Text style={{color: '#F6FEAC', fontSize: 18, textAlign: 'center'}}>Days In</Text></View>
-        <View style={{flex: .5}}><Text style={{color: '#F6FEAC', fontSize: 18, textAlign: 'center'}}>Days Left</Text></View>
-        </View>
-        <View style={{flexDirection: 'row'}}>
-        <View style={{flex: .5}}><Text style={{color: 'white', fontSize: 24, textAlign: 'center'}}>{this.state.daysInEU}</Text></View>
-        <View style={{flex: .5}}><Text style={{color: 'white', fontSize: 24, textAlign: 'center'}}>{this.state.daysLeft}</Text></View>
-        </View>
-      
-      <View style={{marginTop: 24, marginBottom: 20}}><ProgressViewIOS  progressTintColor='red' trackTintColor='green' progress={this.state.daysInEU / 90}/></View>
-      <View>
-           <CalendarList
-                horizontal={true}
-                style={{marginTop: 1, height: 320}}           
-                theme={{ calendarBackground: 'black', monthTextColor: 'white', textDisabledColor: 'gray', selectedDayTextColor: 'red'}}
-                pastScrollRange={6}
-              	 minDate={moment().subtract(180, 'days').format(_format)}
-              	 maxDate={moment().format(_format)}                
-                futureScrollRange={0}
-                onDayPress={this.onDaySelect}
-                onDayLongPress={console.log('hello')}
-                markedDates={this.state._markedDates}
-                markingType={'period'}               
-            /> 
-        </View>
-        <View style={{flex: 1, flexDirection: 'column'}}>
-         <View style={{alignItems: 'center', marginBottom: 6}}><Text style={{fontSize: 14, color: 'gray'}}>You can stay until</Text></View>
-        <View style={{alignItems: 'center', marginBottom: 8}}><Text style={{color: '#F6FEAC', fontSize: 16, fontWeight: 'bold'}}>{moment().add(this.state.daysLeft, 'days').format('dddd, MMMM Do YYYY')}</Text></View>
-        </View>
-      </View>
-    );
+  	return (
+  		<View style={{flex: 1, backgroundColor: 'black'}}>
+  		<View>
+  	<TouchableOpacity onPress={() => navigate('App')}><Icon name="ios-arrow-round-back-outline" size={40} color='white' /></TouchableOpacity>
+  </View>
+  <View>
+  		<ScrollView style={{height: 600}}>
+  			{ctryList}
+  		</ScrollView>
+  			<Text style={{fontSize: 14, color: 'white'}}> hello</Text>
+  		</View>
+  		</View>
+  	
+  		
+  		
+
+  		)
   }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
- /*   justifyContent: 'center',*/
-  
-    backgroundColor: 'black'
-  }
-});
-export const freschproject = StackNavigator({
-  App: { screen: App },
-  Settings: { screen: Settings },
-  AnimDemo: {screen: AnimDemo},
-  Intro: {screen: Intro},
-  AnimatedDemo: {screen: AnimatedDemo}
-});
 
-AppRegistry.registerComponent('freschproject', () => freschproject);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
