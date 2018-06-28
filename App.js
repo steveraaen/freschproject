@@ -202,12 +202,14 @@ var countries = [
 {flag: require("./utils/png/uganda.png"), name: "Uganda", schengen: false, europe: false},
 {flag: require("./utils/png/ukraine.png"), name: "Ukraine", schengen: false, europe: true},
 {flag: require("./utils/png/united-arab-emirates.png"), name: "United Arab Emirates", schengen: false, europe: false},
+{flag: require("./utils/png/united-kingdom.png"), name: "United Kingdom", schengen: false, europe: true},
 {flag: require("./utils/png/united-states-of-america.png"), name: "United States", schengen: false, europe: false, colors: ['red', 'white', 'blue']},
 {flag: require("./utils/png/uruguay.png"), name: "Uruguay", schengen: false, europe: false},
 {flag: require("./utils/png/uzbekistn.png"), name: "Uzbekistan", schengen: false, europe: false},
 {flag: require("./utils/png/venezuela.png"), name: "Venezuela", schengen: false, europe: false},
 {flag: require("./utils/png/vietnam.png"), name: "Vietnam", schengen: false, europe: false},
 {flag: require("./utils/png/united-kingdom.png"), name: "UK Virgin Islands", schengen: false, europe: false},
+{flag: require("./utils/png/united-kingdom.png"), name: "UK", schengen: false, europe: true},
 {flag: require("./utils/png/united-states-of-america.png"), name: "US Virgin Islands", schengen: false, europe: false},
 {flag: require("./utils/png/yemen.png"), name: "Yemen", schengen: false, europe: false},
 {flag: require("./utils/png/zambia.png"), name: "Zambia", schengen: false, europe: false},
@@ -273,22 +275,19 @@ export default class App extends Component {
       console.log('writeUserData called')
       database.ref('users/' + uid).set({
          uid: uid,
-        markedDates: mkd,
+        _markedDates: mkd,
         daysInEU: wdi,
         daysLeft: wdl,
         lastDay: moment().add(wdl, 'days').format('MMMM Do YYYY'),
       }, () => {
-      AsyncStorage.setItem('key', JSON.stringify({uid: this.state.uid, markedDates: this.state._markedDates, daysInEU: this.state.daysInEU, daysLeft: this.state.daysLeft}))
-      });
+/*      AsyncStorage.setItem('key', JSON.stringify({uid: this.state.uid, markedDates: this.state._markedDates, daysInEU: this.state.daysInEU, daysLeft: this.state.daysLeft}))
+*/      });
     } 
   checkToday() {
   	console.log('checkToday1')
        navigator.geolocation.getCurrentPosition(function(pos) {
            
             this.setState({
-                uLongitude: pos.coords.longitude,
-                uLatitude: pos.coords.latitude,
-                uLnglat: [pos.coords.longitude, pos.coords.latitude],
                 uPosition: pos.coords,
                 deviceLng: pos.coords.longitude,
                 deviceLat: pos.coords.latitude,
@@ -337,17 +336,19 @@ export default class App extends Component {
   } 
     revGeocode(lat, lng) {  
     	console.log('revGeocode')
-    	var lat= parseFloat(this.state.uLatitude).toFixed(6); 
-      var lng= parseFloat(this.state.uLatitude).toFixed(6) ;
+    	var lat= parseFloat(this.state.deviceLat).toFixed(6); 
+      var lng= parseFloat(this.state.deviceLat).toFixed(6) ;
       var histObj = {}
       var histArray = []
-     return axios.get('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + parseFloat(this.state.uLatitude).toFixed(6) +',' + parseFloat(this.state.uLongitude).toFixed(6) + '&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs', {
+     return axios.get('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + parseFloat(this.state.deviceLat).toFixed(6) +',' + parseFloat(this.state.deviceLng).toFixed(6) + '&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs', {
         }).then((doc) => {
 
         for (let i = 0; i < countries.length; i++) {
-          for(let j = 0; j < doc.data.results.length; j++)
+
+          for(let j = 0; j < doc.data.results.length; j++) {
+
           if(countries[i].name === doc.data.results[j].formatted_address) {
-            var cctry = countries[i]  
+           var cctry = countries[i]  
            var curOut = !cctry.europe && !cctry.schengen;
            var curIn = cctry.schengen
            var curNear = !cctry.schengen && cctry.europe
@@ -358,28 +359,9 @@ export default class App extends Component {
            		var curIOColor = 'green'
            	}
 
-					AsyncStorage.getItem('locations', (err, result) => {
-						      if(result === null) {
-						        histArray = []
-						      } else {
-						        histArray = JSON.parse(result)
-						      } 
-						      console.log(result)
-						      histArray.push(histObj)
-						      this.setState({histArray: histArray})
-						        AsyncStorage.setItem('locations', JSON.stringify(histArray));
-						    })
-	            
-
-
            	histObj.ctry = cctry.name
-           	histObj.day = moment().format('MMMM Do YYYY, h:mm a')
-           	histObj.dayMatcher = moment().format('MMMM Do YYYY')
+           	histObj.day = moment().format('MMMM Do YYYY')
            	histObj.flag = flag
-           	AsyncStorage.setItem('hObj', JSON.stringify(histObj))
-           	console.log(AsyncStorage.getItem('hObj'))
-        
-           	histArray.push(histObj)
 
            this.setState({
               ctry: cctry.name,
@@ -388,11 +370,13 @@ export default class App extends Component {
               curIn: curIn,
               curIOColor: curIOColor,
               curNear: curNear,
-              histArray: histArray
+              histArray: histArray,
+              histObj: histObj
 	            }, () => {
 	            		this.setState({_markedDates: {...this.state._markedDates, ...{[_today]: {selected: this.state.curIn, textColor: this.state.curIOColor }},histArray: histArray }})
 	            })
 	            }
+	          }
 	          }
           this.setState({            
             address:  doc.data.results[0].formatted_address.split(",")[0] + ", " + doc.data.results[0].formatted_address.split(",")[1],
@@ -408,7 +392,8 @@ export default class App extends Component {
 
     if (this.state.appState.match(/inactive|background/) && nextAppState === 'active') {
       console.log('App has come to the foreground!')
-    } if (this.state.appState  === 'active' && nextAppState.match(/inactive|background/) ) {
+    } 
+    if (this.state.appState  === 'active' && nextAppState.match(/inactive|background/) ) {
       console.log('App has gone to background!')
       this.writeUserData(this.state.uid, this.state.daysInEU, this.state.daysLeft, this.state._markedDates)
     }
@@ -461,32 +446,19 @@ BackgroundGeolocation.ready({
 
   }
     componentDidMount() {
-  	 this.checkToday()
+  	/* this.checkToday()*/
         navigator.geolocation.getCurrentPosition(function(pos) {
             var { longitude, latitude, accuracy, heading } = pos.coords
             this.setState({
-                uLongitude: pos.coords.longitude,
-                uLatitude: pos.coords.latitude,
-                uLnglat: [pos.coords.longitude, pos.coords.latitude],
-                uPosition: pos.coords,
                 deviceLng: pos.coords.longitude,
                 deviceLat: pos.coords.latitude,
+                uPosition: pos.coords,
                 loading: false
             }, () => {
             	this.revGeocode(this.state.deviceLat, this.state.deviceLng)
             })
         }.bind(this))
-        if(this.state.uid) {
-     AsyncStorage.getItem('key', (err, result) => {
-     	console.log(result)
-      this.setState({
-      	daysInEU: JSON.parse(result).in,
-      	daysLeft: JSON.parse(result).left,
-      	lastDay: moment().add(JSON.parse(result).left, 'days').format('MMMM Do YYYY'),
-      	_markedDates: JSON.parse(result).md
-      });
-    });
-}
+
    
 /*        BackgroundTimer.runBackgroundTimer(() => { 
       	this.checkToday()
@@ -540,6 +512,10 @@ BackgroundTimer.stop();*/
         AsyncStorage.setItem('key', JSON.stringify({in:0, left:90, md:{...this.state._markedDates, ...{[_today]: {selected: cIn}} }}))
 
       }
+      	if(snapshot.val()) {
+      		this.setState({daysInEU: snapshot.val().daysInEU, daysLeft: snapshot.val().daysLeft, lastDay: snapshot.val().lastDay, _markedDates: snapshot.val()._markedDates})
+      		console.log(snapshot.val())
+      	}
 
 /*       database.ref('users/' + this.state.uid).on('value', (snapshot) =>{
          this.setState({
@@ -622,7 +598,7 @@ BackgroundTimer.stop();*/
               	 maxDate={moment().format(_format)}                
                 futureScrollRange={0}
                 onDayPress={this.onDaySelect}
-                onDayLongPress={console.log('hello')}
+              
                 markedDates={this.state._markedDates}
                 markingType={'period'}               
             /> 
