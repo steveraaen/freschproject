@@ -1,6 +1,3 @@
-    //touch of evil  witness for the prosecution
-    // d9162d32-0fb6-4da1-a0a0-d5b96a3757fe
-    console.disableYellowBox = true
 import React, { Component } from 'react';
 import { Animated, AppRegistry, AppState, AsyncStorage, Button, Modal, NetInfo, Platform, StyleSheet, Image, Text, View, ProgressViewIOS, TouchableOpacity } from 'react-native';
 import * as firebase from 'firebase';
@@ -383,6 +380,8 @@ export default class App extends Component {
             latitude: doc.data.results[0].geometry.location[1],
             longitude: doc.data.results[0].geometry.location[0],
             placeName: doc.data.results[0]
+          }, () => {
+          	console.log(this.state)
           })
         }).catch(function(error) {
        throw error
@@ -468,7 +467,6 @@ BackgroundGeolocation.ready({
       }, 
   60000);*/
 /*BackgroundTimer.start();
-
 setTimeout(()=> { 
 	this.checkToday()
 		AsyncStorage.getItem('locations', (err, resu) => {
@@ -479,15 +477,15 @@ BackgroundTimer.stop();*/
 
 
      AppState.addEventListener('change', this._handleAppStateChange);   
-
 // authenticate user and get initial snapshot  
   firebase.auth().signInAnonymously()
 
   .then(() => {
     var database = firebase.database()
     const uid = firebase.auth().currentUser.uid
-
+console.log(this.state.ctry)
     database.ref('users/' + uid).once('value', (snapshot) =>{
+
      if(this.state.curIn) {
       	var cIn = true
       }  else if(!this.state.curIn) {
@@ -497,7 +495,7 @@ BackgroundTimer.stop();*/
       	
 		var mdArr = []
 		for(let i = 1; i < 180; i++) {
-			 mdArr.push({[moment().subtract(i, 'days').format(_format)]:{textColor: 'green', selected: false}})		
+			 mdArr.push({[moment().subtract(i, 'days').format(_format)]:{textColor: 'green', selected: false, country: this.state.ctry, flag: this.state.flag}})		
 		}
 		var newObj = Object.assign({}, ...mdArr)
 		this.setState({_markedDates: newObj})
@@ -506,7 +504,8 @@ BackgroundTimer.stop();*/
           uid: uid,
           daysInEU: 0,
           daysLeft: 90,
-          markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn}} }
+          markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn}} },
+          hist: [{ctry: this.state.ctry, day: moment().format('ddd, MMM Do YY'), flag: this.state.flag, inSch: cIn}]
 
         })
         AsyncStorage.setItem('key', JSON.stringify({in:0, left:90, md:{...this.state._markedDates, ...{[_today]: {selected: cIn}} }}))
@@ -525,7 +524,6 @@ BackgroundTimer.stop();*/
           lastDay: moment().add(snapshot.val().daysLeft, 'days').format('MMMM Do YYYY'),
           mkddts: snapshot.val().markedDates
         }, () => {
-
       this.setState({ _markedDates: this.state.mkddts }, () =>
           this.calcDays(this.state._markedDates)
         );
@@ -563,7 +561,7 @@ BackgroundTimer.stop();*/
 	        		<TouchableOpacity onPress={() => navigate('AnimDemo')}><Icon name="ios-information-circle-outline" size={24} color="#F6FEAC" /></TouchableOpacity>
 	        	</View>
 	    	   <View style={{flex: .20 , marginLeft: 18}}>
-	        		<TouchableOpacity onPress={() => navigate('Settings', {histry: this.state.histArray})}><Icon name="ios-settings-outline" size={24} color="#F6FEAC" /></TouchableOpacity>
+	        		<TouchableOpacity onPress={() => navigate('Settings', {histry: this.state._markedDates})}><Icon name="ios-settings-outline" size={24} color="#F6FEAC" /></TouchableOpacity>
 	        	</View>
 	    	   <View style={{flex: .20 , marginLeft: 18}}>
 	        		<TouchableOpacity onPress={() => navigate('Intro')}><Icon name="ios-menu-outline" size={24} color="pink" /></TouchableOpacity>
@@ -629,12 +627,3 @@ export const freschproject = StackNavigator({
 });
 
 AppRegistry.registerComponent('freschproject', () => freschproject);
-
-
-
-
-
-
-
-
-

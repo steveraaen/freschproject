@@ -40,27 +40,24 @@ export default class Settings extends Component {
 		var dublin = [53.350140, -6.266155]
 		var bucharest = [44.439663, 26.096306]
 		var sarajevo = [43.84864, 18.35644]
+		console.log(this.props.navigation.state.params)
 			if(this.props.navigation.state.params.histry){
-		var hArray = this.props.navigation.state.params.histry.map((day, idx) => {
-
-			return (<View  key={idx} style={{flex: 1, flexDirection: 'row', flexWrap: 'wrap'}}>
-					<View style={{flex: .4, marginLeft: 12}}>
-						<Text style={{fontSize:10, color: 'white'}}>
-						{day.day}
-						</Text>
+				var dates= this.props.navigation.state.params.histry
+				var dts = Object.entries(dates)
+				dts = dts.reverse()
+				var fmtdDates = dts.map((dt, idx) => {
+console.log(dt[0], dt[1].country)
+					return (
+						<View key={idx} style={{flex: 1, flexDirection: 'row'}}>
+						<View style={{flex: .3, marginLeft: 12, alignContent: 'flex-end'}}>
+							<Text style={{color: 'white', fontSize: 12}}>
+								{moment(dt[0]).format('ddd, MMM Do')}
+							</Text>
 						</View>
-						<View style={{flex: .4, marginRight: 6, alignItems: 'center'}}>
-						<Text style={{fontSize:12, color: 'white'}}>
-						{day.ctry}
-						</Text>
-					 </View>
-					 <View style={{flex: .2, marginLeft: 12}}>
-					 <Image style={{width: 20,height: 20}} source={day.flag} />
-					 	
-					 </View>
-					 </View>)
-
-		})}
+						</View>
+						)
+				})
+}
 
 		const { navigate } = this.props.navigation;
 /*		const styles = StyleSheet.create({
@@ -74,7 +71,7 @@ export default class Settings extends Component {
 				<Text style={{fontSize: 20, color: 'white'}}>Recent Locations</Text>
 
 				<ScrollView style={{flex: 1}}>
-					{hArray}
+					{fmtdDates}
 				</ScrollView>
 			</View>
 			)
