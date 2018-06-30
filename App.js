@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Animated, AppRegistry, AppState, AsyncStorage, Button, Modal, NetInfo, Platform, StyleSheet, Image, Text, View, ProgressViewIOS, TouchableOpacity } from 'react-native';
+import { Alert, Animated, AppRegistry, AppState, AsyncStorage, Button, Modal, NetInfo, Platform, ScrollView, StyleSheet, Image, Text, View, ProgressViewIOS, TouchableHighlight ,TouchableOpacity } from 'react-native';
 import * as firebase from 'firebase';
 import { Calendar, CalendarList } from 'react-native-calendars' 
 import { StackNavigator, } from 'react-navigation';
@@ -212,7 +212,8 @@ var countries = [
 {flag: require("./utils/png/zambia.png"), name: "Zambia", schengen: false, europe: false},
 {flag: require("./utils/png/zimbabwe.png"), name: "Zimbabwe", schengen: false, europe: false}
 ]//NSLocationAlwaysAndWhenInUseUsageDescription and NSLocationWhenInUseUsageDescription
-
+var plusImage = require("./utils/png/globe.png")
+var minusImage = require("./utils/png/european-union.png")
 const _format = 'YYYY-MM-DD'
 const _today = moment().format(_format)
 const _maxDate = _today
@@ -246,7 +247,8 @@ export default class App extends Component {
         daysLeft: 90,
         curIn: false,
         fadeAnim:  new Animated.Value(0),
-        todaysDate: moment().format('dddd, MMMM Do YYYY')
+        todaysDate: moment().format('dddd, MMMM Do YYYY'),
+        modalVisible: false
       }
 
 	this.onLocation = this.onLocation.bind(this)
@@ -259,12 +261,17 @@ export default class App extends Component {
 	this.writeUserData = this.writeUserData.bind(this)
 	this.checkToday = this.checkToday.bind(this)
 	this._handleAppStateChange = this._handleAppStateChange.bind(this)
+	this._showAlert = this._showAlert.bind(this)
+	this.setModalVisible = this.setModalVisible.bind(this)
 
     BackgroundGeolocation.on('location', this.onLocation, this.onError);
     BackgroundGeolocation.on('motionchange', this.onMotionChange);
     BackgroundGeolocation.on('activitychange', this.onActivityChange);
     BackgroundGeolocation.on('providerchange', this.onProviderChange);
   } 
+  setModalVisible(visible) {
+    this.setState({modalVisible: visible});
+  }
   writeUserData(uid, wdi, wdl, mkd) {
   	AsyncStorage.getItem('key', (err, res) => {
   		console.log(res)
@@ -301,22 +308,24 @@ export default class App extends Component {
 
       const _selectedDay = moment(day.dateString).format(_format);      
       let selected = true; 
-    	let textColor = "green"
+    	let textColor = "#58FF67"
+    	let msg = "Not Schengen"
+    	let flag = plusImage
+
       if (this.state._markedDates[_selectedDay]) {
         selected = !this.state._markedDates[_selectedDay].selected;  
         if(selected) {
-        	textColor = 'red'
+        	textColor = '#FF6B4E'
+        	msg = "Schengen"
+        	flag = minusImage
         }       
       } 
-
-
-      const updatedMarkedDates = {...this.state._markedDates, ...{ [_selectedDay]: { selected: selected, textColor: textColor } } }
+      const updatedMarkedDates = {...this.state._markedDates, ...{ [_selectedDay]: { selected: selected, textColor: textColor, country: msg, flag: flag } } }
       console.log(updatedMarkedDates)
       this.setState({ _markedDates: updatedMarkedDates }, () =>
           this.calcDays(this.state._markedDates)
         );
   }
-
   calcDays(mds) {
     console.log(mds)
     var selectedArray = []
@@ -351,9 +360,9 @@ export default class App extends Component {
            var curNear = !cctry.schengen && cctry.europe
            var flag = countries[i].flag
            if(curIn){
-           		var curIOColor = 'red'
+           		var curIOColor = '#FF6B4E'
            	} else{
-           		var curIOColor = 'green'
+           		var curIOColor = '#58FF67'
            	}
 
            	histObj.ctry = cctry.name
@@ -370,7 +379,7 @@ export default class App extends Component {
               histArray: histArray,
               histObj: histObj
 	            }, () => {
-	            		this.setState({_markedDates: {...this.state._markedDates, ...{[_today]: {selected: this.state.curIn, textColor: this.state.curIOColor }},histArray: histArray }})
+	            		this.setState({_markedDates: {...this.state._markedDates, ...{[_today]: {selected: this.state.curIn, textColor: this.state.curIOColor, country: this.state.ctry, flag: this.state.flag  }} }})
 	            })
 	            }
 	          }
@@ -382,6 +391,7 @@ export default class App extends Component {
             placeName: doc.data.results[0]
           }, () => {
           	console.log(this.state)
+
           })
         }).catch(function(error) {
        throw error
@@ -405,6 +415,7 @@ export default class App extends Component {
   onLocation(location) {
     console.log('- [event] location: ', location);
     	this.revGeocode(location.coords.latitude, location.coords.longitude)
+   
     	this.setState({locationLat: location.coords.latitude, locationLng: location.coords.longitude})
   }
   onError(error) {
@@ -457,25 +468,6 @@ BackgroundGeolocation.ready({
             	this.revGeocode(this.state.deviceLat, this.state.deviceLng)
             })
         }.bind(this))
-
-   
-/*        BackgroundTimer.runBackgroundTimer(() => { 
-      	this.checkToday()
-			AsyncStorage.getItem('locations', (err, resu) => {
-				this.setState({histArray: resu})
-			})
-      }, 
-  60000);*/
-/*BackgroundTimer.start();
-setTimeout(()=> { 
-	this.checkToday()
-		AsyncStorage.getItem('locations', (err, resu) => {
-		this.setState({histArray: resu})
-			})
-}, 20000)
-BackgroundTimer.stop();*/
-
-
      AppState.addEventListener('change', this._handleAppStateChange);   
 // authenticate user and get initial snapshot  
   firebase.auth().signInAnonymously()
@@ -485,18 +477,23 @@ BackgroundTimer.stop();*/
     const uid = firebase.auth().currentUser.uid
 console.log(this.state.ctry)
     database.ref('users/' + uid).once('value', (snapshot) =>{
-
      if(this.state.curIn) {
       	var cIn = true
+      	var msg = "Schengen"
+      	var icon = minusImage
+
       }  else if(!this.state.curIn) {
       	var cIn = false
+      	var msg = "Not Schengen"
+      	var icon = plusImage
       }
       if(!snapshot.val()) {
-      	
+
 		var mdArr = []
 		for(let i = 1; i < 180; i++) {
-			 mdArr.push({[moment().subtract(i, 'days').format(_format)]:{textColor: 'green', selected: false, country: this.state.ctry, flag: this.state.flag}})		
+			 mdArr.push({[moment().subtract(i, 'days').format(_format)]:{textColor: this.state.curIOColor, selected: cIn, country: msg, flag: icon}})		
 		}
+		mdArr = mdArr.reverse()
 		var newObj = Object.assign({}, ...mdArr)
 		this.setState({_markedDates: newObj})
 
@@ -504,8 +501,8 @@ console.log(this.state.ctry)
           uid: uid,
           daysInEU: 0,
           daysLeft: 90,
-          markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn}} },
-          hist: [{ctry: this.state.ctry, day: moment().format('ddd, MMM Do YY'), flag: this.state.flag, inSch: cIn}]
+          markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn, textColor: this.state.curIOColor, country: this.state.ctry}} },
+/*          hist: [{ctry: this.state.ctry, day: moment().format('ddd, MMM Do YY'), flag: this.state.flag, inSch: cIn}]*/
 
         })
         AsyncStorage.setItem('key', JSON.stringify({in:0, left:90, md:{...this.state._markedDates, ...{[_today]: {selected: cIn}} }}))
@@ -529,7 +526,7 @@ console.log(this.state.ctry)
         );
         })
          console.log(snapshot.val())
-      })    */   
+      })    */    
     })
 
     this.setState({
@@ -542,6 +539,25 @@ console.log(this.state.ctry)
   });
   // Get geolocation
   }
+    _showAlert = () => {
+    Alert.alert(
+      'One - Time Setup',
+      'Have you been to Europe in the past six months?',
+      [
+        {
+          text: 'No',
+          onPress: () => console.log('Ask me later pressed'),
+        },
+        {
+          text: 'Yes',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        { text: 'Show me the list of Schengen countries', onPress: () => console.log('OK Pressed') },
+      ],
+      { cancelable: false }
+    );
+  };
   render() {
   	 const { navigate } = this.props.navigation;
     Animated.timing(                  // Animate over time
@@ -550,11 +566,72 @@ console.log(this.state.ctry)
         toValue: 1,                   // Animate to opacity: 1 (opaque)
         duration: 10000,              // Make it take a while
       }
-    ).start(); 
+    ).start();
 
+			if(this.state._markedDates){
+				var dates= this.state._markedDates
+				var dts = Object.entries(dates)
+				dts = dts.reverse()
+				var fmtdDates = dts.map((dt, idx) => {
+
+					return (
+					
+						<View  key={idx} style={{flex: 1, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between'}}>
+						<View style={{marginLeft: 8}}>
+							<Text style={{color: '#F6FEAC', fontSize: 14}}>
+								{moment(dt[0]).format('ddd, MMM Do')}
+							</Text>
+						</View>
+						<View style={{margin: 4}}>
+							<Text style={{color: dt[1].textColor, fontSize: 16, textAlign: 'right'}}>
+								{dt[1].country}
+							</Text>
+						</View>
+						<View style={{marginRight: 8}}>
+							<Image style={{width: 20,height: 20}} source={dt[1].flag} />
+						</View>
+						</View>
+				
+						)
+				})
+}
     return (
       <View style={styles.container}>
-        
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={this.state.modalVisible}
+          onRequestClose={() => {
+            alert('Modal has been closed.');
+          }}>
+          <View style={{marginTop: 22}}>
+            <View>
+              <Text>Hello World!</Text>
+
+              <TouchableHighlight
+                onPress={() => {
+                  this.setModalVisible(!this.state.modalVisible);
+                }}>
+                <Text>Hide Modal</Text>
+              </TouchableHighlight>
+            </View>
+		         <View>
+		           <CalendarList
+		                horizontal={true}
+		                style={{marginTop: 1, height: 320}}           
+		                theme={{ calendarBackground: 'black', monthTextColor: 'white', textDisabledColor: 'gray', selectedDayTextColor: 'red'}}
+		                pastScrollRange={6}
+		              	 minDate={moment().subtract(180, 'days').format(_format)}
+		              	 maxDate={moment().format(_format)}                
+		                futureScrollRange={0}
+		                onDayPress={this.onDaySelect}
+		              
+		                markedDates={this.state._markedDates}
+		                markingType={'period'}               
+		            /> 
+		        </View>
+          </View>
+        </Modal>        
         <View style={{flexDirection: 'row', flexWrap: 'wrap', marginTop: 22,  height: 28}}>
 
 	         <View style={{flex: .20 , marginLeft: 18}}>
@@ -567,13 +644,13 @@ console.log(this.state.ctry)
 	        		<TouchableOpacity onPress={() => navigate('Intro')}><Icon name="ios-menu-outline" size={24} color="pink" /></TouchableOpacity>
 	        	</View>
 	    	   <View style={{flex: .20 , marginLeft: 18}}>
-	        		<TouchableOpacity onPress={() => navigate('AnimatedDemo')}><Icon name="ios-menu-outline" size={24} color="pink" /></TouchableOpacity>
+	        		<TouchableOpacity onPress={() => { this.setModalVisible(true)}}><Icon name="ios-calendar-outline" size={24} color="pink" /></TouchableOpacity>
 	        	</View>
         	</View>
 
         <View style={{flexDirection: 'row', justifyContent: 'center', height:38}}> 
           <View style={{paddingBottom: 6}}><Text style={{fontSize: 30, fontWeight: 'bold', color: 'white'}}>{this.state.ctry}</Text></View>
-          <View style={{marginLeft: 20, marginTop: 4}}><TouchableOpacity onPress={() => this.checkToday()}><Image source={this.state.flag} style={{width: 30, height: 30}}/></TouchableOpacity></View>
+          <View style={{marginLeft: 20, marginTop: 4}}><TouchableOpacity  onPress={this._showAlert}><Image source={this.state.flag} style={{width: 30, height: 30}}/></TouchableOpacity></View>
         </View>
       
         <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 12}}>
@@ -586,22 +663,15 @@ console.log(this.state.ctry)
         </View>
       
       <View style={{marginTop: 24, marginBottom: 20}}><ProgressViewIOS  progressTintColor='red' trackTintColor='green' progress={this.state.daysInEU / 90}/></View>
-      <View>
-           <CalendarList
-                horizontal={true}
-                style={{marginTop: 1, height: 320}}           
-                theme={{ calendarBackground: 'black', monthTextColor: 'white', textDisabledColor: 'gray', selectedDayTextColor: 'red'}}
-                pastScrollRange={6}
-              	 minDate={moment().subtract(180, 'days').format(_format)}
-              	 maxDate={moment().format(_format)}                
-                futureScrollRange={0}
-                onDayPress={this.onDaySelect}
-              
-                markedDates={this.state._markedDates}
-                markingType={'period'}               
-            /> 
-        </View>
-        <View style={{flex: 1, flexDirection: 'column'}}>
+      	<View style={{flex: 1, justifyContent: 'center', backgroundColor: 'black'}}>
+
+				<Text style={{fontSize: 20, color: 'white'}}>Recent Locations</Text>
+
+				<ScrollView style={{flex: 1}}>
+					{fmtdDates}
+				</ScrollView>
+			</View>
+        <View style={{flexDirection: 'column'}}>
          <View style={{alignItems: 'center', marginBottom: 6}}><Text style={{fontSize: 14, color: 'gray'}}>You can stay until</Text></View>
         <View style={{alignItems: 'center', marginBottom: 8}}><Text style={{color: '#F6FEAC', fontSize: 16, fontWeight: 'bold'}}>{moment().add(this.state.daysLeft, 'days').format('dddd, MMMM Do YYYY')}</Text></View>
         </View>

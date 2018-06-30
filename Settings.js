@@ -24,8 +24,6 @@ export default class Settings extends Component {
 		}
 		var newObj = Object.assign({}, ...mdArr)
 		this.setState({ates: newObj})
-
-
 	}
 
 	render() {
@@ -46,15 +44,25 @@ export default class Settings extends Component {
 				var dts = Object.entries(dates)
 				dts = dts.reverse()
 				var fmtdDates = dts.map((dt, idx) => {
-console.log(dt[0], dt[1].country)
+
 					return (
-						<View key={idx} style={{flex: 1, flexDirection: 'row'}}>
-						<View style={{flex: .3, marginLeft: 12, alignContent: 'flex-end'}}>
-							<Text style={{color: 'white', fontSize: 12}}>
+					
+						<View  key={idx} style={{flex: 1, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between'}}>
+						<View style={{marginLeft: 8}}>
+							<Text style={{color: dt[1].textColor, fontSize: 14}}>
 								{moment(dt[0]).format('ddd, MMM Do')}
 							</Text>
 						</View>
+						<View style={{margin: 4}}>
+							<Text style={{color: dt[1].textColor, fontSize: 16}}>
+								{dt[1].country}
+							</Text>
 						</View>
+						<View style={{marginRight: 8}}>
+							<Image style={{width: 24,height: 24}} source={dt[1].flag} />
+						</View>
+						</View>
+				
 						)
 				})
 }
