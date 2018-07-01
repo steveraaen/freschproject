@@ -272,16 +272,17 @@ export default class App extends Component {
   setModalVisible(visible) {
     this.setState({modalVisible: visible});
   }
-  writeUserData(uid, wdi, wdl, mkd) {
-  	AsyncStorage.getItem('key', (err, res) => {
+  writeUserData(uid, wdi, wdl, mkd/*, har*/) {
+/*  	AsyncStorage.getItem('key', (err, res) => {
   		console.log(res)
-  	})
+  	})*/
       console.log('writeUserData called')
       database.ref('users/' + uid).set({
          uid: uid,
         _markedDates: mkd,
         daysInEU: wdi,
         daysLeft: wdl,
+       /* history: har,*/
         lastDay: moment().add(wdl, 'days').format('MMMM Do YYYY'),
       }, () => {
 /*      AsyncStorage.setItem('key', JSON.stringify({uid: this.state.uid, markedDates: this.state._markedDates, daysInEU: this.state.daysInEU, daysLeft: this.state.daysLeft}))
@@ -340,12 +341,16 @@ export default class App extends Component {
       })
     }
   } 
-    revGeocode(lat, lng) {  
+    revGeocode(lat, lng) {
+/*    database.ref('/users' + this.state.uid).once('value', (snapshot) => {
+    	console.log(snapshot.val())
+    }) */
     	console.log('revGeocode')
     	var lat= parseFloat(this.state.deviceLat).toFixed(6); 
       var lng= parseFloat(this.state.deviceLat).toFixed(6) ;
       var histObj = {}
-      var histArray = []
+      
+
      return axios.get('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + parseFloat(this.state.deviceLat).toFixed(6) +',' + parseFloat(this.state.deviceLng).toFixed(6) + '&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs', {
         }).then((doc) => {
 
@@ -368,7 +373,10 @@ export default class App extends Component {
            	histObj.ctry = cctry.name
            	histObj.day = moment().format('MMMM Do YYYY')
            	histObj.flag = flag
+           	var histArray =[histObj]
+           console.log(histArray.includes(histObj))
 
+           	console.log(histArray)
            this.setState({
               ctry: cctry.name,
               flag: flag,
@@ -379,7 +387,9 @@ export default class App extends Component {
               histArray: histArray,
               histObj: histObj
 	            }, () => {
-	            		this.setState({_markedDates: {...this.state._markedDates, ...{[_today]: {selected: this.state.curIn, textColor: this.state.curIOColor, country: this.state.ctry, flag: this.state.flag  }} }})
+	            		this.setState({
+	            			_markedDates: {...this.state._markedDates, ...{[_today]: {selected: this.state.curIn, textColor: this.state.curIOColor, country: this.state.ctry, flag: this.state.flag  }} }
+	            		})
 	            })
 	            }
 	          }
@@ -404,7 +414,8 @@ export default class App extends Component {
     } 
     if (this.state.appState  === 'active' && nextAppState.match(/inactive|background/) ) {
       console.log('App has gone to background!')
-      this.writeUserData(this.state.uid, this.state.daysInEU, this.state.daysLeft, this.state._markedDates)
+
+      this.writeUserData(this.state.uid, this.state.daysInEU, this.state.daysLeft, this.state._markedDates/*, this.state.history*/)
     }
     this.setState({appState: nextAppState});
   }
@@ -414,9 +425,11 @@ export default class App extends Component {
   }
   onLocation(location) {
     console.log('- [event] location: ', location);
-    	this.revGeocode(location.coords.latitude, location.coords.longitude)
-   
-    	this.setState({locationLat: location.coords.latitude, locationLng: location.coords.longitude})
+    
+	      
+    	this.setState({deviceLat: location.coords.latitude, deviceLng: location.coords.longitude}, () => {
+    		this.revGeocode(this.state.deviceLat, this.state.deviceLng)
+    	})
   }
   onError(error) {
     console.warn('- [event] location error ', error);
@@ -444,6 +457,8 @@ BackgroundGeolocation.ready({
 	logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
 	stopOnTerminate: false,   // <-- Allow the background-service to continue tracking when user closes the app.
 	startOnBoot: true,
+/*	url: 'https://maps.googleapis.com/maps/api/geocode/json?latlng=' + parseFloat(this.state.deviceLat).toFixed(6) +',' + parseFloat(this.state.deviceLng).toFixed(6) + '&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs',
+*/
 }, (state) => {
   console.log('- BackgroundGeolocation is ready: ', state);
     if (!state.enabled) {  // <-- current state provided to callback
@@ -470,6 +485,7 @@ BackgroundGeolocation.ready({
         }.bind(this))
      AppState.addEventListener('change', this._handleAppStateChange);   
 // authenticate user and get initial snapshot  
+
   firebase.auth().signInAnonymously()
 
   .then(() => {
@@ -501,15 +517,15 @@ console.log(this.state.ctry)
           uid: uid,
           daysInEU: 0,
           daysLeft: 90,
-          markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn, textColor: this.state.curIOColor, country: this.state.ctry}} },
-/*          hist: [{ctry: this.state.ctry, day: moment().format('ddd, MMM Do YY'), flag: this.state.flag, inSch: cIn}]*/
+          markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn, textColor: this.state.curIOColor, country: this.state.ctry, flag: this.state.flag}} },
+          history: [{ctry: this.state.ctry, day: moment().format('ddd, MMM Do YY'), flag: this.state.flag, inSch: cIn}]
 
         })
-        AsyncStorage.setItem('key', JSON.stringify({in:0, left:90, md:{...this.state._markedDates, ...{[_today]: {selected: cIn}} }}))
+/*        AsyncStorage.setItem('key', JSON.stringify({in:0, left:90, md:{...this.state._markedDates, ...{[_today]: {selected: cIn}} }}))*/
 
       }
       	if(snapshot.val()) {
-      		this.setState({daysInEU: snapshot.val().daysInEU, daysLeft: snapshot.val().daysLeft, lastDay: snapshot.val().lastDay, _markedDates: snapshot.val()._markedDates})
+      		this.setState({daysInEU: snapshot.val().daysInEU, daysLeft: snapshot.val().daysLeft, lastDay: snapshot.val().lastDay, _markedDates: snapshot.val()._markedDates/*, history: snapshot.val().history*/})
       		console.log(snapshot.val())
       	}
 
@@ -550,7 +566,7 @@ console.log(this.state.ctry)
         },
         {
           text: 'Yes',
-          onPress: () => console.log('Cancel Pressed'),
+          onPress: () => this.setModalVisible(),
           style: 'cancel',
         },
         { text: 'Show me the list of Schengen countries', onPress: () => console.log('OK Pressed') },
@@ -606,7 +622,7 @@ console.log(this.state.ctry)
           }}>
           <View style={{marginTop: 22}}>
             <View>
-              <Text>Hello World!</Text>
+              
 
               <TouchableHighlight
                 onPress={() => {
@@ -668,7 +684,7 @@ console.log(this.state.ctry)
 				<Text style={{fontSize: 20, color: 'white'}}>Recent Locations</Text>
 
 				<ScrollView style={{flex: 1}}>
-					{fmtdDates}
+					
 				</ScrollView>
 			</View>
         <View style={{flexDirection: 'column'}}>
