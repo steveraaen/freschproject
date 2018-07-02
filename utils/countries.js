@@ -83,7 +83,7 @@ var countries = [{flag: "./utils/png/afghanistan.png",name: "Afghanistan", schen
 {flag: "./utils/png/indonesia.png", name: "Indonesia", schengen: false, europe: false},
 {flag: "./utils/png/iran.png", name: "Iran", schengen: false, europe: false},
 {flag: "./utils/png/iraq.png", name: "Iraq", schengen: false, europe: false, colors:['gold', 'green']},
-{flag: "./utils/png/ireland.png", name: "Ireland", schengen: false, europe: true, colors: ['green', 'gold', 'white']},
+{flag: "./utils/png/ireland.png", name: "Ireland", schengen: true, europe: true, colors: ['green', 'gold', 'white']},
 {flag: "./utils/png/isreal.png", name: "Israel and the Occupied Territories", schengen: false, europe: false, colors: ['blue', 'white']},
 {flag: "./utils/png/italy.png", name: "Italy", schengen: true, europe: true, colors:['white', 'red', 'green']},
 {flag: "./utils/png/ivory-coast.png", name: "Ivory Coast (Cote d'Ivoire)", schengen: false, europe: false},

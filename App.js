@@ -98,7 +98,7 @@ var countries = [
 {flag: require("./utils/png/indonesia.png"), name: "Indonesia", schengen: false, europe: false},
 {flag: require("./utils/png/iran.png"), name: "Iran", schengen: false, europe: false},
 {flag: require("./utils/png/iraq.png"), name: "Iraq", schengen: false, europe: false, colors:['gold', 'green']},
-{flag: require("./utils/png/ireland.png"), name: "Ireland", schengen: false, europe: true, colors: ['green', 'gold', 'white']},
+{flag: require("./utils/png/ireland.png"), name: "Ireland", schengen: true, europe: true, colors: ['green', 'gold', 'white']},
 {flag: require("./utils/png/israel.png"), name: "Israel and the Occupied Territories", schengen: false, europe: false, colors: ['blue', 'white']},
 {flag: require("./utils/png/italy.png"), name: "Italy", schengen: true, europe: true, colors:['white', 'red', 'green']},
 {flag: require("./utils/png/ivory-coast.png"), name: "Ivory Coast (Cote d'Ivoire)", schengen: false, europe: false},
@@ -349,21 +349,23 @@ export default class App extends Component {
     	var lat= parseFloat(this.state.deviceLat).toFixed(6); 
       var lng= parseFloat(this.state.deviceLat).toFixed(6) ;
       var histObj = {}
-      
+      var histArray = [histObj]
 
      return axios.get('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + parseFloat(this.state.deviceLat).toFixed(6) +',' + parseFloat(this.state.deviceLng).toFixed(6) + '&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs', {
         }).then((doc) => {
-
+console.log(doc.data.results[0].address_components.length)
         for (let i = 0; i < countries.length; i++) {
 
-          for(let j = 0; j < doc.data.results.length; j++) {
+          for(let j = 0; j < doc.data.results[0].address_components.length; j++) {
 
-          if(countries[i].name === doc.data.results[j].formatted_address) {
+          if(countries[i].name === doc.data.results[0].address_components[j].long_name) {
+console.log(countries[i].schengen)
            var cctry = countries[i]  
            var curOut = !cctry.europe && !cctry.schengen;
            var curIn = cctry.schengen
            var curNear = !cctry.schengen && cctry.europe
            var flag = countries[i].flag
+
            if(curIn){
            		var curIOColor = '#FF6B4E'
            	} else{
@@ -373,10 +375,10 @@ export default class App extends Component {
            	histObj.ctry = cctry.name
            	histObj.day = moment().format('MMMM Do YYYY')
            	histObj.flag = flag
-           	var histArray =[histObj]
+          
            console.log(histArray.includes(histObj))
 
-           	console.log(histArray)
+           /*	console.log(histArray)*/
            this.setState({
               ctry: cctry.name,
               flag: flag,
@@ -398,10 +400,7 @@ export default class App extends Component {
             address:  doc.data.results[0].formatted_address.split(",")[0] + ", " + doc.data.results[0].formatted_address.split(",")[1],
             latitude: doc.data.results[0].geometry.location[1],
             longitude: doc.data.results[0].geometry.location[0],
-            placeName: doc.data.results[0]
-          }, () => {
-          	console.log(this.state)
-
+            placeName: doc.data.results
           })
         }).catch(function(error) {
        throw error
@@ -424,11 +423,19 @@ export default class App extends Component {
 
   }
   onLocation(location) {
-    console.log('- [event] location: ', location);
-    
-	      
+  	var histObj = this.state.histObj
+  	console.log(histObj)
+  	var hashObj = JSON.stringify(histObj)
+  	console.log(hashObj)
+  	var histRec = 
+   console.log('- [event] location: ', location);
+		var historyRef = firebase.database().ref('users/' + this.state.uid + '/history');
+
+
+		historyRef.push(histObj) 
     	this.setState({deviceLat: location.coords.latitude, deviceLng: location.coords.longitude}, () => {
-    		this.revGeocode(this.state.deviceLat, this.state.deviceLng)
+    	this.revGeocode(this.state.deviceLat, this.state.deviceLng)
+
     	})
   }
   onError(error) {
@@ -507,7 +514,7 @@ console.log(this.state.ctry)
 
 		var mdArr = []
 		for(let i = 1; i < 180; i++) {
-			 mdArr.push({[moment().subtract(i, 'days').format(_format)]:{textColor: this.state.curIOColor, selected: cIn, country: msg, flag: icon}})		
+			 mdArr.push({[moment().subtract(i, 'days').format(_format)]:{textColor: 'cyan', selected: cIn, country: msg, flag: icon}})		
 		}
 		mdArr = mdArr.reverse()
 		var newObj = Object.assign({}, ...mdArr)
@@ -517,15 +524,15 @@ console.log(this.state.ctry)
           uid: uid,
           daysInEU: 0,
           daysLeft: 90,
-          markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn, textColor: this.state.curIOColor, country: this.state.ctry, flag: this.state.flag}} },
-          history: [{ctry: this.state.ctry, day: moment().format('ddd, MMM Do YY'), flag: this.state.flag, inSch: cIn}]
+          markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn, textColor: 'gray', country: this.state.ctry, flag: this.state.flag}} },
+/*          history: [{ctry: this.state.ctry, day: moment().format('ddd, MMM Do YY'), flag: this.state.flag, inSch: cIn}]*/
 
         })
 /*        AsyncStorage.setItem('key', JSON.stringify({in:0, left:90, md:{...this.state._markedDates, ...{[_today]: {selected: cIn}} }}))*/
 
       }
       	if(snapshot.val()) {
-      		this.setState({daysInEU: snapshot.val().daysInEU, daysLeft: snapshot.val().daysLeft, lastDay: snapshot.val().lastDay, _markedDates: snapshot.val()._markedDates/*, history: snapshot.val().history*/})
+      		this.setState({daysInEU: snapshot.val().daysInEU, daysLeft: snapshot.val().daysLeft, lastDay: snapshot.val().lastDay, _markedDates: snapshot.val()._markedDates, history: snapshot.val().history})
       		console.log(snapshot.val())
       	}
 
@@ -584,8 +591,8 @@ console.log(this.state.ctry)
       }
     ).start();
 
-			if(this.state._markedDates){
-				var dates= this.state._markedDates
+			if(this.state.history){
+				var dates= this.state.history
 				var dts = Object.entries(dates)
 				dts = dts.reverse()
 				var fmtdDates = dts.map((dt, idx) => {
@@ -595,12 +602,12 @@ console.log(this.state.ctry)
 						<View  key={idx} style={{flex: 1, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between'}}>
 						<View style={{marginLeft: 8}}>
 							<Text style={{color: '#F6FEAC', fontSize: 14}}>
-								{moment(dt[0]).format('ddd, MMM Do')}
+								{dt[1].day}
 							</Text>
 						</View>
 						<View style={{margin: 4}}>
-							<Text style={{color: dt[1].textColor, fontSize: 16, textAlign: 'right'}}>
-								{dt[1].country}
+							<Text style={{color: 'coral', fontSize: 16, textAlign: 'right'}}>
+								{dt[1].ctry}
 							</Text>
 						</View>
 						<View style={{marginRight: 8}}>
@@ -684,7 +691,7 @@ console.log(this.state.ctry)
 				<Text style={{fontSize: 20, color: 'white'}}>Recent Locations</Text>
 
 				<ScrollView style={{flex: 1}}>
-					
+					{fmtdDates}
 				</ScrollView>
 			</View>
         <View style={{flexDirection: 'column'}}>
