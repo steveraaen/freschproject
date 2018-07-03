@@ -247,7 +247,7 @@ export default class App extends Component {
         daysLeft: 90,
         curIn: false,
         fadeAnim:  new Animated.Value(0),
-        todaysDate: moment().format('dddd, MMMM Do YYYY'),
+        todaysDate: moment().format('MMMM Do YYYY'),
         modalVisible: false
       }
 
@@ -272,17 +272,17 @@ export default class App extends Component {
   setModalVisible(visible) {
     this.setState({modalVisible: visible});
   }
-  writeUserData(uid, wdi, wdl, mkd/*, har*/) {
+  writeUserData(uid, wdi, wdl, mkd, har) {
 /*  	AsyncStorage.getItem('key', (err, res) => {
   		console.log(res)
   	})*/
       console.log('writeUserData called')
       database.ref('users/' + uid).set({
          uid: uid,
-        _markedDates: mkd,
         daysInEU: wdi,
         daysLeft: wdl,
-       /* history: har,*/
+        markedDates: mkd,
+        history: har,
         lastDay: moment().add(wdl, 'days').format('MMMM Do YYYY'),
       }, () => {
 /*      AsyncStorage.setItem('key', JSON.stringify({uid: this.state.uid, markedDates: this.state._markedDates, daysInEU: this.state.daysInEU, daysLeft: this.state.daysLeft}))
@@ -349,7 +349,6 @@ export default class App extends Component {
     	var lat= parseFloat(this.state.deviceLat).toFixed(6); 
       var lng= parseFloat(this.state.deviceLat).toFixed(6) ;
       var histObj = {}
-      var histArray = [histObj]
 
      return axios.get('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + parseFloat(this.state.deviceLat).toFixed(6) +',' + parseFloat(this.state.deviceLng).toFixed(6) + '&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs', {
         }).then((doc) => {
@@ -359,7 +358,7 @@ console.log(doc.data.results[0].address_components.length)
           for(let j = 0; j < doc.data.results[0].address_components.length; j++) {
 
           if(countries[i].name === doc.data.results[0].address_components[j].long_name) {
-console.log(countries[i].schengen)
+
            var cctry = countries[i]  
            var curOut = !cctry.europe && !cctry.schengen;
            var curIn = cctry.schengen
@@ -371,14 +370,12 @@ console.log(countries[i].schengen)
            	} else{
            		var curIOColor = '#58FF67'
            	}
-
+           	console.log(this.state.histObj)
            	histObj.ctry = cctry.name
            	histObj.day = moment().format('MMMM Do YYYY')
-           	histObj.flag = flag
-          
-           console.log(histArray.includes(histObj))
+           	histObj.flag = flag,
+           	histObj.textColor = curIOColor
 
-           /*	console.log(histArray)*/
            this.setState({
               ctry: cctry.name,
               flag: flag,
@@ -386,7 +383,6 @@ console.log(countries[i].schengen)
               curIn: curIn,
               curIOColor: curIOColor,
               curNear: curNear,
-              histArray: histArray,
               histObj: histObj
 	            }, () => {
 	            		this.setState({
@@ -401,6 +397,11 @@ console.log(countries[i].schengen)
             latitude: doc.data.results[0].geometry.location[1],
             longitude: doc.data.results[0].geometry.location[0],
             placeName: doc.data.results
+          }, () => {
+          			var historyRef = firebase.database().ref('users/' + this.state.uid + '/history');
+
+
+		historyRef.push(histObj)
           })
         }).catch(function(error) {
        throw error
@@ -414,7 +415,7 @@ console.log(countries[i].schengen)
     if (this.state.appState  === 'active' && nextAppState.match(/inactive|background/) ) {
       console.log('App has gone to background!')
 
-      this.writeUserData(this.state.uid, this.state.daysInEU, this.state.daysLeft, this.state._markedDates/*, this.state.history*/)
+      this.writeUserData(this.state.uid, this.state.daysInEU, this.state.daysLeft, this.state._markedDates, this.state.history)
     }
     this.setState({appState: nextAppState});
   }
@@ -425,14 +426,9 @@ console.log(countries[i].schengen)
   onLocation(location) {
   	var histObj = this.state.histObj
   	console.log(histObj)
-  	var hashObj = JSON.stringify(histObj)
-  	console.log(hashObj)
-  	var histRec = 
+
    console.log('- [event] location: ', location);
-		var historyRef = firebase.database().ref('users/' + this.state.uid + '/history');
-
-
-		historyRef.push(histObj) 
+ 
     	this.setState({deviceLat: location.coords.latitude, deviceLng: location.coords.longitude}, () => {
     	this.revGeocode(this.state.deviceLat, this.state.deviceLng)
 
@@ -487,7 +483,13 @@ BackgroundGeolocation.ready({
                 uPosition: pos.coords,
                 loading: false
             }, () => {
-            	this.revGeocode(this.state.deviceLat, this.state.deviceLng)
+            	this.revGeocode(this.state.deviceLat, this.state.deviceLng).then(()=> {
+            		if(this.state.todaysDate !== this.state.histObj.day && this.state.ctry !== this.state.histObj.ctry) {
+            			console.log(this.state.histObj.day, this.state.todaysDate)
+            			console.log(this.state.histObj.ctry, this.state.ctry)
+            		this.setState({histObj: {day: this.state.todaysDate, country: this.state.ctry, flag: this.state.flag}})
+            		}
+            	})
             })
         }.bind(this))
      AppState.addEventListener('change', this._handleAppStateChange);   
@@ -498,8 +500,9 @@ BackgroundGeolocation.ready({
   .then(() => {
     var database = firebase.database()
     const uid = firebase.auth().currentUser.uid
-console.log(this.state.ctry)
-    database.ref('users/' + uid).once('value', (snapshot) =>{
+
+    database.ref('users/' + uid).on('value', (snapshot) =>{
+   /* 	console.log(this.state)*/
      if(this.state.curIn) {
       	var cIn = true
       	var msg = "Schengen"
@@ -514,7 +517,7 @@ console.log(this.state.ctry)
 
 		var mdArr = []
 		for(let i = 1; i < 180; i++) {
-			 mdArr.push({[moment().subtract(i, 'days').format(_format)]:{textColor: 'cyan', selected: cIn, country: msg, flag: icon}})		
+			 mdArr.push({[moment().subtract(i, 'days').format(_format)]:{textColor: 'green', selected: cIn, country: msg, flag: icon}})		
 		}
 		mdArr = mdArr.reverse()
 		var newObj = Object.assign({}, ...mdArr)
@@ -524,15 +527,16 @@ console.log(this.state.ctry)
           uid: uid,
           daysInEU: 0,
           daysLeft: 90,
-          markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn, textColor: 'gray', country: this.state.ctry, flag: this.state.flag}} },
-/*          history: [{ctry: this.state.ctry, day: moment().format('ddd, MMM Do YY'), flag: this.state.flag, inSch: cIn}]*/
+          markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn, textColor: this.state.curIOColor, country: this.state.ctry, flag: this.state.flag}} },
+
+         
 
         })
 /*        AsyncStorage.setItem('key', JSON.stringify({in:0, left:90, md:{...this.state._markedDates, ...{[_today]: {selected: cIn}} }}))*/
 
       }
       	if(snapshot.val()) {
-      		this.setState({daysInEU: snapshot.val().daysInEU, daysLeft: snapshot.val().daysLeft, lastDay: snapshot.val().lastDay, _markedDates: snapshot.val()._markedDates, history: snapshot.val().history})
+      		this.setState({daysInEU: snapshot.val().daysInEU, daysLeft: snapshot.val().daysLeft, lastDay: snapshot.val().lastDay, _markedDates: snapshot.val().markedDates, history: snapshot.val().history})
       		console.log(snapshot.val())
       	}
 
@@ -594,28 +598,42 @@ console.log(this.state.ctry)
 			if(this.state.history){
 				var dates= this.state.history
 				var dts = Object.entries(dates)
-				dts = dts.reverse()
-				var fmtdDates = dts.map((dt, idx) => {
-
+			/*	dts = dts.reverse()*/
+			var starray = []
+			for(let i = 0; i < dts.length; i++) {
+				starray.push(JSON.stringify(dts[i][1]))
+			}
+			let unique = [...new Set(starray)];
+					console.log(unique)
+			let uniqueObjs = []
+			for(let i = 0; i < unique.length; i++)  {
+				uniqueObjs.push(JSON.parse(unique[i]))
+			}
+			console.log(uniqueObjs)
+				var fmtdDates = uniqueObjs.map((dt, idx) => {
+			
+		/*			if(JSON.stringify(dt[1]) !== JSON.stringify(this.state.histObj))  {*/
+						
 					return (
 					
 						<View  key={idx} style={{flex: 1, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between'}}>
 						<View style={{marginLeft: 8}}>
 							<Text style={{color: '#F6FEAC', fontSize: 14}}>
-								{dt[1].day}
+								{dt.day}
 							</Text>
 						</View>
 						<View style={{margin: 4}}>
-							<Text style={{color: 'coral', fontSize: 16, textAlign: 'right'}}>
-								{dt[1].ctry}
+							<Text style={{color: dt.textColor, fontSize: 16, textAlign: 'right'}}>
+								{dt.ctry}
 							</Text>
 						</View>
 						<View style={{marginRight: 8}}>
-							<Image style={{width: 20,height: 20}} source={dt[1].flag} />
+							<Image style={{width: 20,height: 20}} source={dt.flag} />
 						</View>
 						</View>
 				
 						)
+				/*	}*/
 				})
 }
     return (
@@ -671,7 +689,7 @@ console.log(this.state.ctry)
 	        	</View>
         	</View>
 
-        <View style={{flexDirection: 'row', justifyContent: 'center', height:38}}> 
+        <View style={{flexDirection: 'row', justifyContent: 'space-evenly', height:38}}> 
           <View style={{paddingBottom: 6}}><Text style={{fontSize: 30, fontWeight: 'bold', color: 'white'}}>{this.state.ctry}</Text></View>
           <View style={{marginLeft: 20, marginTop: 4}}><TouchableOpacity  onPress={this._showAlert}><Image source={this.state.flag} style={{width: 30, height: 30}}/></TouchableOpacity></View>
         </View>
@@ -686,7 +704,7 @@ console.log(this.state.ctry)
         </View>
       
       <View style={{marginTop: 24, marginBottom: 20}}><ProgressViewIOS  progressTintColor='red' trackTintColor='green' progress={this.state.daysInEU / 90}/></View>
-      	<View style={{flex: 1, justifyContent: 'center', backgroundColor: 'black'}}>
+      	<View style={{flex: 1, justifyContent: 'space-evenly', backgroundColor: 'black'}}>
 
 				<Text style={{fontSize: 20, color: 'white'}}>Recent Locations</Text>
 
@@ -706,7 +724,7 @@ console.log(this.state.ctry)
 const styles = StyleSheet.create({
   container: {
     flex: 1,
- /*   justifyContent: 'center',*/
+ /*   justifyContent: 'space-evenly',*/
   
     backgroundColor: 'black'
   }
