@@ -12,6 +12,7 @@ import Settings from './Settings.js';
 import AnimDemo from './AnimDemo.js';
 import AnimatedDemo from './AnimatedDemo.js';
 import Intro from './Intro.js';
+import Test from './Test.js';
 var countries = [
 {flag: require("./utils/png/afghanistan.png"),name: "Afghanistan", schengen: false, europe: false},
 {flag: require("./utils/png/albania.png"), name: "Albania", schengen: false, europe: true, colors: ['black', 'red']},
@@ -37,6 +38,7 @@ var countries = [
 {flag: require("./utils/png/bhutan.png"), name: "Bhutan", schengen: false, europe: false},
 {flag: require("./utils/png/bolivia.png"), name: "Bolivia", schengen: false, europe: false},
 {flag: require("./utils/png/bosnia-and-herzegovina.png"), name: "Bosnia & Herzegovina", schengen: false, europe: true, colors:['white', 'red', 'blue']},
+{flag: require("./utils/png/bosnia-and-herzegovina.png"), name: "Bosnia and Herzegovina", schengen: false, europe: true, colors:['white', 'red', 'blue']},
 {flag: require("./utils/png/botswana.png"), name: "Botswana", schengen: false, europe: false},
 {flag: require("./utils/png/brazil.png"), name: "Brazil", schengen: false, europe: false, colors:['green', 'yellow']},
 {flag: require("./utils/png/brunei.png"), name: "Brunei Darussalam", schengen: false, europe: false},
@@ -279,9 +281,9 @@ export default class App extends Component {
       console.log('writeUserData called')
       database.ref('users/' + uid).set({
          uid: uid,
+        markedDates: mkd,
         daysInEU: wdi,
         daysLeft: wdl,
-        markedDates: mkd,
         history: har,
         lastDay: moment().add(wdl, 'days').format('MMMM Do YYYY'),
       }, () => {
@@ -300,7 +302,7 @@ export default class App extends Component {
                 timeNow: moment().format('h:mm:ss a')
             }, () => this.revGeocode(this.state.deviceLat, this.state.deviceLng, () => {
       
-            	this.calcDays()
+            	this.calcDays(this.state._markedDates)
             },))
 		}.bind(this))
   }
@@ -308,7 +310,7 @@ export default class App extends Component {
   	console.log(day)
 
       const _selectedDay = moment(day.dateString).format(_format);      
-      let selected = true; 
+      let selected = false; 
     	let textColor = "#58FF67"
     	let msg = "Not Schengen"
     	let flag = plusImage
@@ -334,7 +336,7 @@ export default class App extends Component {
       if(mds[mkds].selected) {
         selectedArray.push(mds[mkds])
       }
-   
+console.log(selectedArray.length)
       this.setState({
         daysInEU: selectedArray.length,
         daysLeft: 90 - selectedArray.length
@@ -349,10 +351,11 @@ export default class App extends Component {
     	var lat= parseFloat(this.state.deviceLat).toFixed(6); 
       var lng= parseFloat(this.state.deviceLat).toFixed(6) ;
       var histObj = {}
+      var histArray = [this.state.histObj] 
 
      return axios.get('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + parseFloat(this.state.deviceLat).toFixed(6) +',' + parseFloat(this.state.deviceLng).toFixed(6) + '&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs', {
         }).then((doc) => {
-console.log(doc.data.results[0].address_components.length)
+console.log(doc)
         for (let i = 0; i < countries.length; i++) {
 
           for(let j = 0; j < doc.data.results[0].address_components.length; j++) {
@@ -370,11 +373,12 @@ console.log(doc.data.results[0].address_components.length)
            	} else{
            		var curIOColor = '#58FF67'
            	}
-           	console.log(this.state.histObj)
+     
            	histObj.ctry = cctry.name
            	histObj.day = moment().format('MMMM Do YYYY')
            	histObj.flag = flag,
            	histObj.textColor = curIOColor
+           console.log(this.state.histObj)
 
            this.setState({
               ctry: cctry.name,
@@ -383,11 +387,13 @@ console.log(doc.data.results[0].address_components.length)
               curIn: curIn,
               curIOColor: curIOColor,
               curNear: curNear,
+              histArray: histArray,
               histObj: histObj
 	            }, () => {
 	            		this.setState({
-	            			_markedDates: {...this.state._markedDates, ...{[_today]: {selected: this.state.curIn, textColor: this.state.curIOColor, country: this.state.ctry, flag: this.state.flag  }} }
-	            		})
+	            			_markedDates: {...this.state._markedDates, ...{[_today]: {selected: this.state.curIn, textColor: this.state.curIOColor, country: this.state.ctry, flag: this.state.flag  }} },
+
+	            		}, ()=> this.calcDays(this.state._markedDates))
 	            })
 	            }
 	          }
@@ -397,11 +403,6 @@ console.log(doc.data.results[0].address_components.length)
             latitude: doc.data.results[0].geometry.location[1],
             longitude: doc.data.results[0].geometry.location[0],
             placeName: doc.data.results
-          }, () => {
-          			var historyRef = firebase.database().ref('users/' + this.state.uid + '/history');
-
-
-		historyRef.push(histObj)
           })
         }).catch(function(error) {
        throw error
@@ -426,12 +427,15 @@ console.log(doc.data.results[0].address_components.length)
   onLocation(location) {
   	var histObj = this.state.histObj
   	console.log(histObj)
-
+  	var hashObj = JSON.stringify(histObj)
+  	console.log(hashObj)
+  	var histRec = 
    console.log('- [event] location: ', location);
- 
+    	var historyRef = firebase.database().ref('users/' + this.state.uid + '/history');
+		historyRef.push(histObj) 
+		console.log(this.state._markedDates)
     	this.setState({deviceLat: location.coords.latitude, deviceLng: location.coords.longitude}, () => {
     	this.revGeocode(this.state.deviceLat, this.state.deviceLng)
-
     	})
   }
   onError(error) {
@@ -502,11 +506,12 @@ BackgroundGeolocation.ready({
     const uid = firebase.auth().currentUser.uid
 
     database.ref('users/' + uid).on('value', (snapshot) =>{
-   /* 	console.log(this.state)*/
+    	console.log(this.state)
      if(this.state.curIn) {
       	var cIn = true
       	var msg = "Schengen"
-      	var icon = minusImage
+      	var icon = minusImage 
+      
 
       }  else if(!this.state.curIn) {
       	var cIn = false
@@ -517,7 +522,7 @@ BackgroundGeolocation.ready({
 
 		var mdArr = []
 		for(let i = 1; i < 180; i++) {
-			 mdArr.push({[moment().subtract(i, 'days').format(_format)]:{textColor: 'green', selected: cIn, country: msg, flag: icon}})		
+			 mdArr.push({[moment().subtract(i, 'days').format(_format)]:{textColor: 'green', selected: false, country: msg, flag: icon}})		
 		}
 		mdArr = mdArr.reverse()
 		var newObj = Object.assign({}, ...mdArr)
@@ -525,10 +530,9 @@ BackgroundGeolocation.ready({
 
         database.ref('users/' + uid).set({
           uid: uid,
-          daysInEU: 0,
-          daysLeft: 90,
-          markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn, textColor: this.state.curIOColor, country: this.state.ctry, flag: this.state.flag}} },
-
+          daysInEU: this.state.daysInEU,
+          daysLeft: this.state.daysLeft,
+          markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn, textColor: 'gray', country: this.state.ctry, flag: this.state.flag}} },
          
 
         })
@@ -685,12 +689,15 @@ BackgroundGeolocation.ready({
 	        		<TouchableOpacity onPress={() => navigate('Intro')}><Icon name="ios-menu-outline" size={24} color="pink" /></TouchableOpacity>
 	        	</View>
 	    	   <View style={{flex: .20 , marginLeft: 18}}>
+	        		<TouchableOpacity onPress={() => navigate('Test')}><Icon name="ios-menu-outline" size={24} color="pink" /></TouchableOpacity>
+	        	</View>
+	    	   <View style={{flex: .20 , marginLeft: 18}}>
 	        		<TouchableOpacity onPress={() => { this.setModalVisible(true)}}><Icon name="ios-calendar-outline" size={24} color="pink" /></TouchableOpacity>
 	        	</View>
         	</View>
 
         <View style={{flexDirection: 'row', justifyContent: 'space-evenly', height:38}}> 
-          <View style={{paddingBottom: 6}}><Text style={{fontSize: 30, fontWeight: 'bold', color: 'white'}}>{this.state.ctry}</Text></View>
+          <View style={{paddingBottom: 6}}><Text adjustsFontSizeToFit style={{fontSize: 28, fontWeight: 'bold', color: 'white'}}>{this.state.ctry}</Text></View>
           <View style={{marginLeft: 20, marginTop: 4}}><TouchableOpacity  onPress={this._showAlert}><Image source={this.state.flag} style={{width: 30, height: 30}}/></TouchableOpacity></View>
         </View>
       
@@ -734,7 +741,8 @@ export const freschproject = StackNavigator({
   Settings: { screen: Settings },
   AnimDemo: {screen: AnimDemo},
   Intro: {screen: Intro},
-  AnimatedDemo: {screen: AnimatedDemo}
+  AnimatedDemo: {screen: AnimatedDemo},
+  Test: {screen: Test}
 });
 
 AppRegistry.registerComponent('freschproject', () => freschproject);
