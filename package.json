@@ -13,6 +13,7 @@
     "react": "16.3.1",
     "react-native": "0.55.4",
     "react-native-background-geolocation": "^2.12.2",
+    "react-native-background-timer": "^2.0.1",
     "react-native-calendars": "^1.19.3",
     "react-native-typewriter": "^0.5.3",
     "react-native-vector-icons": "^4.6.0",
