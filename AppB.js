@@ -13,6 +13,7 @@ import AnimDemo from './AnimDemo.js';
 import AnimatedDemo from './AnimatedDemo.js';
 import Intro from './Intro.js';
 import Test from './Test.js';
+import FirstUse from './FirstUse.js';
 var countries = [
 {flag: require("./utils/png/afghanistan.png"),name: "Afghanistan", schengen: false, europe: false},
 {flag: require("./utils/png/albania.png"), name: "Albania", schengen: false, europe: true, colors: ['black', 'red']},
@@ -250,7 +251,8 @@ export default class App extends Component {
         curIn: false,
         fadeAnim:  new Animated.Value(0),
         todaysDate: moment().format('MMMM Do YYYY'),
-        modalVisible: false
+        modalVisible: false,
+        firstLaunch: null
       }
 
 	this.onLocation = this.onLocation.bind(this)
@@ -478,7 +480,18 @@ BackgroundGeolocation.ready({
 
   }
     componentDidMount() {
-  	/* this.checkToday()*/
+        AsyncStorage.getItem("alreadyLaunched").then(value => {
+            if(value == null){
+                 AsyncStorage.setItem('alreadyLaunched', "yes"); // No need to wait for `setItem` to finish, although you might want to handle errors
+                 this.setState({firstLaunch: true}, () => {
+                 	 
+                 });
+            }
+            else{
+                 this.setState({firstLaunch: false});
+            }}) // Add some error handling, also you can simply do this.setState({fistLaunch: value == null})
+    
+
         navigator.geolocation.getCurrentPosition(function(pos) {
             var { longitude, latitude, accuracy, heading } = pos.coords
             this.setState({
@@ -517,7 +530,7 @@ BackgroundGeolocation.ready({
       	var icon = plusImage
       }
       if(!snapshot.val()) {
-
+     
 		var mdArr = []
 		for(let i = 1; i < 180; i++) {
 			 mdArr.push({[moment().subtract(i, 'days').format(_format)]:{textColor: 'green', selected: false, country: msg, flag: icon}})		
@@ -530,12 +543,12 @@ BackgroundGeolocation.ready({
           uid: uid,
           daysInEU: this.state.daysInEU,
           daysLeft: this.state.daysLeft,
-          markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn, textColor: 'gray', country: this.state.ctry, flag: this.state.flag}} },
+          markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn, textColor: this.state.curIOColor, country: this.state.ctry, flag: this.state.flag}} },
           history: {}
 
         })
 /*        AsyncStorage.setItem('key', JSON.stringify({in:0, left:90, md:{...this.state._markedDates, ...{[_today]: {selected: cIn}} }}))*/
-
+			
       }
       	if(snapshot.val()) {
       		this.setState({daysInEU: snapshot.val().daysInEU, daysLeft: snapshot.val().daysLeft, lastDay: snapshot.val().lastDay, _markedDates: snapshot.val().markedDates, history: snapshot.val().history})
@@ -638,10 +651,15 @@ BackgroundGeolocation.ready({
 				/*	}*/
 				})
 }
+if(this.state.firstLaunch) {
+	return(
+		<FirstUse />
+		)
+} else {
     return (
       <View style={styles.container}>
          <StatusBar
-		     backgroundColor="blue"
+		    
 		     barStyle="light-content"
    />
         <Modal
@@ -653,7 +671,7 @@ BackgroundGeolocation.ready({
             alert('Modal has been closed.');
           }}>
           <View style={{backgroundColor: 'black'}}>
-            <View style={{backgroundColor: 'black', marginTop: 24}}>
+            <View style={{backgroundColor: 'black', marginTop: 4}}>
               
 
               <TouchableHighlight
@@ -664,8 +682,8 @@ BackgroundGeolocation.ready({
               </TouchableHighlight>
             </View>
 		         <View>
-		           <Calendar
-		                hideArrows={true}
+		           <CalendarList
+		                horizontal={true}
 		                style={{marginTop: 1, height: 320}}           
 		                theme={{ calendarBackground: 'black', monthTextColor: 'white', textDisabledColor: 'gray', selectedDayTextColor: 'red'}}
 		                pastScrollRange={6}
@@ -673,7 +691,7 @@ BackgroundGeolocation.ready({
 		              	 maxDate={moment().format(_format)}                
 		                futureScrollRange={0}
 		                onDayPress={this.onDaySelect}
-		                hideExtraDays={true}
+		                
 		                markedDates={this.state._markedDates}
 		                markingType={'period'}               
 		            /> 
@@ -683,7 +701,7 @@ BackgroundGeolocation.ready({
 		        </View>
           </View>
         </Modal>        
-        <View style={{flexDirection: 'row', flexWrap: 'wrap', marginTop: 22,  height: 28}}>
+        <View style={{flexDirection: 'row', flexWrap: 'wrap', marginTop: 42, marginBottom: 24,  height: 28}}>
 
 	         <View style={{flex: .20 , marginLeft: 18}}>
 	        		<TouchableOpacity onPress={() => navigate('AnimDemo')}><Icon name="ios-information-circle-outline" size={24} color="#F6FEAC" /></TouchableOpacity>
@@ -691,9 +709,7 @@ BackgroundGeolocation.ready({
 	    	   <View style={{flex: .20 , marginLeft: 18}}>
 	        		<TouchableOpacity onPress={() => navigate('Settings', {histry: this.state._markedDates})}><Icon name="ios-settings-outline" size={24} color="#F6FEAC" /></TouchableOpacity>
 	        	</View>
-	    	   <View style={{flex: .20 , marginLeft: 18}}>
-	        		<TouchableOpacity onPress={() => navigate('Test')}><Icon name="ios-menu-outline" size={24} color="pink" /></TouchableOpacity>
-	        	</View>
+
 	    	   <View style={{flex: .20 , marginLeft: 18}}>
 	        		<TouchableOpacity onPress={() => { this.setModalVisible(true)}}><Icon name="ios-calendar-outline" size={24} color="pink" /></TouchableOpacity>
 	        	</View>
@@ -727,7 +743,8 @@ BackgroundGeolocation.ready({
         <View style={{alignItems: 'center', marginBottom: 8}}><Text style={{color: '#F6FEAC', fontSize: 16, fontWeight: 'bold'}}>{moment().add(this.state.daysLeft, 'days').format('dddd, MMMM Do YYYY')}</Text></View>
         </View>
       </View>
-    );
+    )
+	}
   }
 }
 

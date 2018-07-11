@@ -288,24 +288,24 @@ export default class Intro extends Component {
   }
 
   render() {
-  	const { navigate } = this.props.navigation;
+ /* 	const { navigate } = this.props.navigation;*/
 
   	const styles = StyleSheet.create({
   		container: {
-  			flex: 1,
-  			justifyContent: 'center',
+  		/*	flex: .5,*/
+  		/*	justifyContent: 'center',*/
   			backgroundColor: 'black'
   		},
 	  block: {
 	    marginTop: 10,
 	    height: 40,
 	   
-	    justifyContent: 'center'
+	    /*justifyContent: 'center'*/
 	  },
 	  blockb: {
 	    marginTop: 10,
 	    height: 40, 
-	    justifyContent: 'center'
+	    /*justifyContent: 'center'*/
 	  },
 	  blockText: {
 	    color: '#5078F8', 
@@ -338,7 +338,7 @@ export default class Intro extends Component {
   })
   	const marginLeft = this.animatedValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, 100]
+    outputRange: [0, 60]
   })
   const opacity = this.animatedValue.interpolate({
     inputRange: [0, 1],
@@ -368,10 +368,19 @@ for(let i = 0; i < this.state.curFlags.length; i++) {
 }
 
   	return(
-  	<View style={styles.container}>
-
-
-  	</View>
+<View style={styles.container}>
+     <View style={{flexDirection: 'row'}}>
+       <Animated.View style={[styles.block, {marginLeft} ]}><Text style={styles.blockText}>Fres</Text> </Animated.View>	
+       <Animated.View style={[styles.blockb, {marginTop}]}><Text style={styles.blockTextb}>chen</Text> </Animated.View>	
+     </View>	
+ 		<View style={{marginTop: 26, marginLeft: 22,flexDirection: 'row'}}>	
+         <TouchableOpacity onPress={() => navigate('App')}><Icon name="ios-arrow-round-back-outline" size={40} color='black' /></TouchableOpacity>	
+     </View>	
+     <View style={{flexDirection: "row", flexWrap: 'wrap', justifyContent: 'center' }}>   	
+		{flagArr}      	
+   </View> 	
+ 	 
+   	</View>
   		)
   }
 }

@@ -227,7 +227,7 @@ export default class AnimatedDemo extends Component {
   }
 
   render() {
-  	const { navigate } = this.props.navigation;
+ /* 	const { navigate } = this.props.navigation;*/
 
   	const marginLeft = this.animatedValue.interpolate({
     inputRange: [0, 1],
