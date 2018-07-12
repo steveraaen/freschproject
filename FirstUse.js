@@ -7,23 +7,25 @@ export default class FirstUse extends Component {
 		super(props);
 	}
 	render() {
+
+	/*	const { navigate } = this.props.navigation;*/
 		return(
 			<View style={{flex: 1, justifyContent: 'center', backgroundColor: 'black'}}>
 			<Intro />
 			<View style={{backgroundColor: 'black', margin: 14}}>
-				<Text style={{ fontSize: 14, color: 'pink'}}>{blurb}</Text>
+				<Text style={{ fontSize: 14, color: '#F6FEAC'}}>{blurb}</Text>
 			</View>
-			<Button
-			  
-			  title="Yes"
-			  color="#FF6B4E"
-			  accessibilityLabel="I have been to Europe in the past six months"
+			<Button	
+				onPress={() => this.props.ack()}
+				title="Yes"
+				color="#FF6B4E"
+				accessibilityLabel="I have been to Europe in the past six months"
 			/>
-			<Button
-			 
-			  title="No"
-			  color="#58FF67"
-			  accessibilityLabel="I have not been to Europe in the past six months"
+			<Button	
+				onPress={() => console.log('pressed')}	 
+				title="No"
+				color="#58FF67"
+				accessibilityLabel="I have not been to Europe in the past six months"
 			/>
 			</View>
 			)

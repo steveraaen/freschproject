@@ -233,7 +233,7 @@ const _minDate = moment().subtract(90, 'days').format(_format)
  const firebaseApp = firebase.initializeApp(firebaseConfig);
 database= firebase.database()
 
-export default class App extends Component {
+export default class AppB extends Component {
 	    static navigationOptions = {
         header: null
     }
@@ -267,6 +267,7 @@ export default class App extends Component {
 	this._handleAppStateChange = this._handleAppStateChange.bind(this)
 	this._showAlert = this._showAlert.bind(this)
 	this.setModalVisible = this.setModalVisible.bind(this)
+	this.ackFirstLaunch = this.ackFirstLaunch.bind(this)
 
     BackgroundGeolocation.on('location', this.onLocation, this.onError);
     BackgroundGeolocation.on('motionchange', this.onMotionChange);
@@ -600,6 +601,12 @@ BackgroundGeolocation.ready({
       { cancelable: false }
     );
   };
+  ackFirstLaunch() {
+  	this.setState({firstLaunch: false}, () => {
+  		this.setModalVisible()
+  	})
+  }
+
   render() {
   	 const { navigate } = this.props.navigation;
     Animated.timing(                  // Animate over time
@@ -653,7 +660,7 @@ BackgroundGeolocation.ready({
 }
 if(this.state.firstLaunch) {
 	return(
-		<FirstUse />
+		<FirstUse ack={this.ackFirstLaunch}/>
 		)
 } else {
     return (
@@ -757,12 +764,13 @@ const styles = StyleSheet.create({
   }
 });
 export const freschproject = StackNavigator({
-  App: { screen: App },
+  AppB: { screen: AppB },
   Settings: { screen: Settings },
   AnimDemo: {screen: AnimDemo},
   Intro: {screen: Intro},
   AnimatedDemo: {screen: AnimatedDemo},
-  Test: {screen: Test}
+  Test: {screen: Test},
+  FirstUse: {screen: FirstUse}
 });
 
 AppRegistry.registerComponent('freschproject', () => freschproject);
