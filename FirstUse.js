@@ -16,13 +16,13 @@ export default class FirstUse extends Component {
 				<Text style={{ fontSize: 14, color: '#F6FEAC'}}>{blurb}</Text>
 			</View>
 			<Button	
-				onPress={() => this.props.ack()}
+				onPress={() => this.props.ackIn()}
 				title="Yes"
 				color="#FF6B4E"
 				accessibilityLabel="I have been to Europe in the past six months"
 			/>
 			<Button	
-				onPress={() => console.log('pressed')}	 
+				onPress={() => this.props.ackOut()} 
 				title="No"
 				color="#58FF67"
 				accessibilityLabel="I have not been to Europe in the past six months"

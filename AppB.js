@@ -267,7 +267,8 @@ export default class AppB extends Component {
 	this._handleAppStateChange = this._handleAppStateChange.bind(this)
 	this._showAlert = this._showAlert.bind(this)
 	this.setModalVisible = this.setModalVisible.bind(this)
-	this.ackFirstLaunch = this.ackFirstLaunch.bind(this)
+	this.ackFirstLaunchIn = this.ackFirstLaunchIn.bind(this)
+	this.ackFirstLaunchOut = this.ackFirstLaunchOut.bind(this)
 
     BackgroundGeolocation.on('location', this.onLocation, this.onError);
     BackgroundGeolocation.on('motionchange', this.onMotionChange);
@@ -601,10 +602,13 @@ BackgroundGeolocation.ready({
       { cancelable: false }
     );
   };
-  ackFirstLaunch() {
+  ackFirstLaunchIn() {
   	this.setState({firstLaunch: false}, () => {
   		this.setModalVisible()
   	})
+  }
+  ackFirstLaunchOut() {
+  	this.setState({firstLaunch: false})
   }
 
   render() {
@@ -660,7 +664,7 @@ BackgroundGeolocation.ready({
 }
 if(this.state.firstLaunch) {
 	return(
-		<FirstUse ack={this.ackFirstLaunch}/>
+		<FirstUse ackIn={this.ackFirstLaunchIn} ackOut={this.ackFirstLaunchOut}/>
 		)
 } else {
     return (
