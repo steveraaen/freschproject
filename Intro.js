@@ -363,7 +363,7 @@ export default class Intro extends Component {
   })
   var flagArr = []
 for(let i = 0; i < this.state.curFlags.length; i++) {
-		flagArr.push(<Animated.Image style={{width: 33,height: 33, transform: [{rotate: spin}] }}source={this.state.curFlags[i]} key={i}
+		flagArr.push(<Animated.Image style={{width: 22,height: 22, transform: [{rotate: spin}] }}source={this.state.curFlags[i]} key={i}
       /> )
 }
 

@@ -278,7 +278,7 @@ export default class AppB extends Component {
   setModalVisible(visible) {
     this.setState({modalVisible: visible});
   }
-  writeUserData(uid, wdi, wdl, mkd, har) {
+  writeUserData(uid, wdi, wdl, mkd/*, har*/) {
 /*  	AsyncStorage.getItem('key', (err, res) => {
   		console.log(res)
   	})*/
@@ -288,7 +288,7 @@ export default class AppB extends Component {
         markedDates: mkd,
         daysInEU: wdi,
         daysLeft: wdl,
-        history: har,
+     /*   history: har,*/
         lastDay: moment().add(wdl, 'days').format('MMMM Do YYYY'),
       }, () => {
 /*      AsyncStorage.setItem('key', JSON.stringify({uid: this.state.uid, markedDates: this.state._markedDates, daysInEU: this.state.daysInEU, daysLeft: this.state.daysLeft}))
@@ -420,7 +420,7 @@ console.log(doc)
     if (this.state.appState  === 'active' && nextAppState.match(/inactive|background/) ) {
       console.log('App has gone to background!')
 
-      this.writeUserData(this.state.uid, this.state.daysInEU, this.state.daysLeft, this.state._markedDates, this.state.history)
+      this.writeUserData(this.state.uid, this.state.daysInEU, this.state.daysLeft, this.state._markedDates,/* this.state.history*/)
     }
     this.setState({appState: nextAppState});
   }
@@ -435,8 +435,8 @@ console.log(doc)
   	console.log(hashObj)
   	var histRec = 
    console.log('- [event] location: ', location);
-    	var historyRef = firebase.database().ref('users/' + this.state.uid + '/history');
-		historyRef.push(histObj) 
+/*    	var historyRef = firebase.database().ref('users/' + this.state.uid + '/history');
+		historyRef.push(histObj) */
 		console.log(this.state._markedDates)
     	this.setState({deviceLat: location.coords.latitude, deviceLng: location.coords.longitude}, () => {
     	this.revGeocode(this.state.deviceLat, this.state.deviceLng)
@@ -482,6 +482,7 @@ BackgroundGeolocation.ready({
 
   }
     componentDidMount() {
+    	 AppState.addEventListener('change', this._handleAppStateChange);  
         AsyncStorage.getItem("alreadyLaunched").then(value => {
             if(value == null){
                  AsyncStorage.setItem('alreadyLaunched', "yes"); // No need to wait for `setItem` to finish, although you might want to handle errors
@@ -511,7 +512,7 @@ BackgroundGeolocation.ready({
             	})
             })
         }.bind(this))
-     AppState.addEventListener('change', this._handleAppStateChange);   
+ 
 	  firebase.auth().signInAnonymously()
 
 	  .then(() => {
@@ -540,20 +541,19 @@ BackgroundGeolocation.ready({
 		mdArr = mdArr.reverse()
 		var newObj = Object.assign({}, ...mdArr)
 		this.setState({_markedDates: newObj})
-
+		if(this.state.ctry) {
         database.ref('users/' + uid).set({
           uid: uid,
           daysInEU: this.state.daysInEU,
           daysLeft: this.state.daysLeft,
-          markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn, textColor: this.state.curIOColor, country: this.state.ctry, flag: this.state.flag}} },
-          history: {}
-
+          markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn, textColor: 'green', country: 'placeholder', flag: this.state.flag}} }
         })
+        }
 /*        AsyncStorage.setItem('key', JSON.stringify({in:0, left:90, md:{...this.state._markedDates, ...{[_today]: {selected: cIn}} }}))*/
 			
       }
       	if(snapshot.val()) {
-      		this.setState({daysInEU: snapshot.val().daysInEU, daysLeft: snapshot.val().daysLeft, lastDay: snapshot.val().lastDay, _markedDates: snapshot.val().markedDates, history: snapshot.val().history})
+      		this.setState({daysInEU: snapshot.val().daysInEU, daysLeft: snapshot.val().daysLeft, lastDay: snapshot.val().lastDay, _markedDates: snapshot.val().markedDates/*, history: snapshot.val().history*/})
       		console.log(snapshot.val())
       	}
 
@@ -621,8 +621,9 @@ BackgroundGeolocation.ready({
       }
     ).start();
 
-			if(this.state.history){
-				var dates= this.state.history
+			if(this.state._markedDates){
+				console.log(this.state._markedDates)
+				var dates= this.state._markedDates
 				var dts = Object.entries(dates)
 			/*	dts = dts.reverse()*/
 			var starray = []
