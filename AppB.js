@@ -625,43 +625,47 @@ BackgroundGeolocation.ready({
 				console.log(this.state._markedDates)
 				var dates= this.state._markedDates
 				var dts = Object.entries(dates)
+				dts.reverse()
+				var mdtsDisplay = dts.map((mdate, idx) => {
+					console.log(mdate[0])
+						return (
+					
+						<View  key={idx} style={{flex: 1, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between'}}>
+						<View style={{marginLeft: 8}}>
+							<Text style={{color: '#F6FEAC', fontSize: 14}}>
+								{mdate[0]}
+							</Text>
+						</View>
+						<View style={{margin: 4}}>
+							<Text style={{color: mdate[1].textColor, fontSize: 16, textAlign: 'right'}}>
+								{mdate[1].country}
+							</Text>
+						</View>
+						<View style={{marginRight: 8}}>
+							<Image style={{width: 20,height: 20}} source={mdate[1].flag} />
+						</View>
+						</View>
+				
+						)
+
+				})
+
+
+
+
+
 			/*	dts = dts.reverse()*/
 			var starray = []
 			for(let i = 0; i < dts.length; i++) {
 				starray.push(JSON.stringify(dts[i][1]))
 			}
 			let unique = [...new Set(starray)];
-					console.log(unique)
+					
 			let uniqueObjs = []
 			for(let i = 0; i < unique.length; i++)  {
 				uniqueObjs.push(JSON.parse(unique[i]))
 			}
-			console.log(uniqueObjs)
-				var fmtdDates = uniqueObjs.map((dt, idx) => {
-			
-		/*			if(JSON.stringify(dt[1]) !== JSON.stringify(this.state.histObj))  {*/
-						
-					return (
-					
-						<View  key={idx} style={{flex: 1, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between'}}>
-						<View style={{marginLeft: 8}}>
-							<Text style={{color: '#F6FEAC', fontSize: 14}}>
-								{dt.day}
-							</Text>
-						</View>
-						<View style={{margin: 4}}>
-							<Text style={{color: dt.textColor, fontSize: 16, textAlign: 'right'}}>
-								{dt.ctry}
-							</Text>
-						</View>
-						<View style={{marginRight: 8}}>
-							<Image style={{width: 20,height: 20}} source={dt.flag} />
-						</View>
-						</View>
-				
-						)
-				/*	}*/
-				})
+
 }
 if(this.state.firstLaunch) {
 	return(
@@ -718,9 +722,7 @@ if(this.state.firstLaunch) {
 	         <View style={{flex: .20 , marginLeft: 18}}>
 	        		<TouchableOpacity onPress={() => navigate('AnimDemo')}><Icon name="ios-information-circle-outline" size={24} color="#F6FEAC" /></TouchableOpacity>
 	        	</View>
-	    	   <View style={{flex: .20 , marginLeft: 18}}>
-	        		<TouchableOpacity onPress={() => navigate('Settings', {histry: this.state._markedDates})}><Icon name="ios-settings-outline" size={24} color="#F6FEAC" /></TouchableOpacity>
-	        	</View>
+
 
 	    	   <View style={{flex: .20 , marginLeft: 18}}>
 	        		<TouchableOpacity onPress={() => { this.setModalVisible(true)}}><Icon name="ios-calendar-outline" size={24} color="pink" /></TouchableOpacity>
@@ -747,7 +749,7 @@ if(this.state.firstLaunch) {
 				<Text style={{fontSize: 20, color: 'white'}}>Recent Locations</Text>
 
 				<ScrollView style={{flex: 1}}>
-					{fmtdDates}
+					{mdtsDisplay}
 				</ScrollView>
 			</View>
         <View style={{flexDirection: 'column'}}>
