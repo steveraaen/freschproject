@@ -538,7 +538,7 @@ BackgroundGeolocation.ready({
      
 		var mdArr = []
 		for(let i = 1; i < 180; i++) {
-			 mdArr.push({[moment().subtract(i, 'days').format(_format)]:{textColor: 'green', selected: false, country: msg, flag: euroGreen}})		
+			 mdArr.push({[moment().subtract(i, 'days').format(_format)]:{textColor: '#58FF67', selected: false, country: msg, flag: euroGreen}})		
 		}
 		mdArr = mdArr.reverse()
 		var newObj = Object.assign({}, ...mdArr)
@@ -689,14 +689,14 @@ if(this.state.firstLaunch) {
             alert('Modal has been closed.');
           }}>
           <View style={{backgroundColor: 'black'}}>
-            <View style={{backgroundColor: 'black', marginTop: 4}}>
+            <View style={{backgroundColor: 'black', marginTop: 32}}>
               
 
               <TouchableHighlight
                 onPress={() => {
                   this.setModalVisible(!this.state.modalVisible);
                 }}>
-                <Icon name="ios-arrow-back-outline" size={24} color="#F6FEAC" />
+                <Icon name="ios-arrow-back-outline" size={32} color="#F6FEAC" />
               </TouchableHighlight>
             </View>
 		         <View>
@@ -722,12 +722,12 @@ if(this.state.firstLaunch) {
         <View style={{flexDirection: 'row', flexWrap: 'wrap', marginTop: 42, marginBottom: 24,  height: 28}}>
 
 	         <View style={{flex: .20 , marginLeft: 18}}>
-	        		<TouchableOpacity onPress={() => navigate('AnimDemo')}><Icon name="ios-information-circle-outline" size={24} color="#F6FEAC" /></TouchableOpacity>
+	        		<TouchableOpacity onPress={() => navigate('AnimDemo')}><Icon name="ios-information-circle-outline" size={32} color="#F6FEAC" /></TouchableOpacity>
 	        	</View>
 
 
 	    	   <View style={{flex: .20 , marginLeft: 18}}>
-	        		<TouchableOpacity onPress={() => { this.setModalVisible(true)}}><Icon name="ios-calendar-outline" size={24} color="#F6FEAC" /></TouchableOpacity>
+	        		<TouchableOpacity onPress={() => { this.setModalVisible(true)}}><Icon name="ios-calendar-outline" size={32} color="#F6FEAC" /></TouchableOpacity>
 	        	</View>
         	</View>
 
