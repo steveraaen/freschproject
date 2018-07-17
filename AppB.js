@@ -217,6 +217,9 @@ var countries = [
 ]//NSLocationAlwaysAndWhenInUseUsageDescription and NSLocationWhenInUseUsageDescription
 var plusImage = require("./utils/png/globe.png")
 var minusImage = require("./utils/png/european-union.png")
+var euroGreen = require("./utils/png/eurogreen.png")
+var euroRed = require("./utils/png/eurored.png")
+
 const _format = 'YYYY-MM-DD'
 const _today = moment().format(_format)
 const _maxDate = _today
@@ -377,12 +380,12 @@ console.log(doc)
            	} else{
            		var curIOColor = '#58FF67'
            	}
-     
+/*     
            	histObj.ctry = cctry.name
            	histObj.day = moment().format('MMMM Do YYYY')
            	histObj.flag = flag,
            	histObj.textColor = curIOColor
-           console.log(this.state.histObj)
+           console.log(this.state.histObj)*/
 
            this.setState({
               ctry: cctry.name,
@@ -523,7 +526,7 @@ BackgroundGeolocation.ready({
 	    	console.log(this.state)
 	     if(this.state.curIn) {
       	var cIn = true
-      	var msg = "In Schengen"
+      	var msg = "Out"
       	var icon = minusImage 
       
 
@@ -546,7 +549,7 @@ BackgroundGeolocation.ready({
           uid: uid,
           daysInEU: this.state.daysInEU,
           daysLeft: this.state.daysLeft,
-          markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn, textColor: 'green', country: 'placeholder', flag: this.state.flag}} }
+          markedDates: {...this.state._markedDates, ...{[_today]: {selected: cIn, textColor: 'green', country: this.state.ctry, flag: this.state.flag}} }
         })
         }
 /*        AsyncStorage.setItem('key', JSON.stringify({in:0, left:90, md:{...this.state._markedDates, ...{[_today]: {selected: cIn}} }}))*/
@@ -746,9 +749,9 @@ if(this.state.firstLaunch) {
       <View style={{marginTop: 24, marginBottom: 20}}><ProgressViewIOS  progressTintColor='red' trackTintColor='green' progress={this.state.daysInEU / 90}/></View>
       	<View style={{flex: 1, justifyContent: 'space-evenly', backgroundColor: 'black'}}>
 
-				<Text style={{fontSize: 20, color: 'white'}}>Recent Locations</Text>
+				<Text style={{fontSize: 20, color: 'white'}}>Schengen Status</Text>
 
-				<ScrollView style={{flex: 1}}>
+				<ScrollView style={{flex: 1, marginTop: 14}}>
 					{mdtsDisplay}
 				</ScrollView>
 			</View>
