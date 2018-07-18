@@ -746,9 +746,9 @@ if(this.state.firstLaunch) {
         </View>
       
       <View style={{marginTop: 24, marginBottom: 20}}><ProgressViewIOS  progressTintColor='red' trackTintColor='green' progress={this.state.daysInEU / 90}/></View>
-      	<View style={{flex: 1, justifyContent: 'space-evenly', backgroundColor: 'black'}}>
+      	<View style={{flex: 1, justifyContent: 'center', backgroundColor: 'black'}}>
 
-				<Text style={{fontSize: 20, color: 'white'}}>Recent Locations</Text>
+				<Text style={{fontSize: 20, color: 'red'}}>In<Text style={{color: 'white'}}> or<Text style={{color: 'green'}}> Out <Text style={{color: 'white', fontSize: 14}}> (of the Schengen Area)</Text></Text></Text></Text>
 
 				<ScrollView style={{flex: 1}}>
 					{mdtsDisplay}
