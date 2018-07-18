@@ -325,7 +325,7 @@ export default class App extends Component {
         selected = !this.state._markedDates[_selectedDay].selected;  
         if(selected) {
         	textColor = '#FF6B4E'
-        	msg = "Schengen"
+        	msg = "In"
         	flag = euroRed
         }       
       } 
@@ -525,13 +525,13 @@ BackgroundGeolocation.ready({
 	    	console.log(this.state)
 	     if(this.state.curIn) {
       	var cIn = true
-      	var msg = " Out Schengen"
+      	var msg = " Out"
       	var icon = euroRed
       
 
       }  else if(!this.state.curIn) {
       	var cIn = false
-      	var msg = "Out Schengen"
+      	var msg = "Out"
       	var icon = euroGreen
       }
       if(!snapshot.val()) {
@@ -747,9 +747,9 @@ if(this.state.firstLaunch) {
       
       <View style={{marginTop: 24, marginBottom: 20}}><ProgressViewIOS  progressTintColor='red' trackTintColor='green' progress={this.state.daysInEU / 90}/></View>
       	<View style={{flex: 1, justifyContent: 'center', backgroundColor: 'black'}}>
-
-				<Text style={{fontSize: 20, color: 'red'}}>In<Text style={{color: 'white'}}> or<Text style={{color: 'green'}}> Out <Text style={{color: 'white', fontSize: 14}}> (of the Schengen Area)</Text></Text></Text></Text>
-
+      	<View style={{justifyContent: 'center', marginBottom: 14}}>
+				<Text style={{color: "#F6FEAC", textAlign: 'center', fontSize: 18, fontWeight: 'bold'}}>Schengen Status</Text>
+			</View>
 				<ScrollView style={{flex: 1}}>
 					{mdtsDisplay}
 				</ScrollView>
