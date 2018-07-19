@@ -67,22 +67,10 @@ export default class AnimDemo extends Component {
         </Text></View>
         <View><Text style={{fontSize:14, color: 'white'}} >
           Freschen will monitor the amount of time you can stay in Europe. 
-          You cannot mark a date in the future. Freschen will do that for you. It checks to see which country you’re in whenever you’ve moved 10 km, or opened Freschen. 
+          You cannot mark a date in the future. Freschen will do that for you. It periodically checks to see which country you’re in. 
           If you’ve been in a Schengen Area (SA) country within the past 90 days, scroll back on the calendar and tap the dates you were there. 
-          There is one main page. It displays information about how many days you are eligible to stay in the Schengen area, as well as the calendar.
-          If you would like to be notified when you are down to your last week (or whatever number of days you’d like), sign up in the settings “icon” area. 
-          Authentication is fully anonymous. When you first use it, Freschen will assign your device a unique identifier. 
-          To use on multiple devices, and to access other features, you can upgrade to Freschen Plus. 
+        
         </Text></View>
-        <View><Text style={{fontSize:14, color: 'white'}} >
-          How It Works:
-          If you’ve been to Europe within the past six months:
-          Scroll back to mark the dates you’ve been in the Schengen area, then decide if we should notify you when your eligibility is almost over. 
-          If you haven’t been to Europe in the past six months:
-          Don’t do anything, except to authorize the app to access your location. 
-
-          Note, the app doesn’t continuously track your location. It “wakes up” several times per day to find what country you’re in. 
-          </Text></View>
 
 </View>
       </View>

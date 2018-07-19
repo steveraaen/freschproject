@@ -5,7 +5,7 @@ import Intro from './Intro.js'
 import DeviceInfo from 'react-native-device-info'
 var sixMonthsAgo = moment().subtract(180, 'days').format('MMMM Do YYYY')
 
-var blurb = `Your device will notify Freschen whenever you cross a border, and recalculate your eligible days automatically. \n\n If you have been to Europe during that period, tap "Yes" to view a calendar and mark the dates that you were in Europe. \n\n Have you been to Europe since ${sixMonthsAgo}?`
+var blurb = `Your device will notify Freschen whenever you cross a border, and recalculate your eligible days automatically. \n\n If you have been to Europe during that period, tap "Yes" to view a calendar and mark the dates that you were in Europe. \n\n Have you been to Europe since `
 export default class FirstUse extends Component {
 	constructor(props) {
 		super(props);
@@ -19,7 +19,7 @@ export default class FirstUse extends Component {
 			<View style={{flex: 1, justifyContent: 'center', backgroundColor: 'black'}}>
 			<Intro />
 			<View style={{backgroundColor: 'black', margin: 14}}>
-				<Text style={{textAlign: 'center', fontSize: 14, color: '#F6FEAC'}}>{blurb}</Text>
+				<Text style={{textAlign: 'center', fontSize: 14, color: '#F6FEAC'}}>{blurb}</Text><Text style={{color: 'white'}}>{sixMonthsAgo}?</Text>
 			</View>
 			<Button	
 				onPress={() => this.props.ackIn()}

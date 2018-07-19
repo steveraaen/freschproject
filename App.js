@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Alert, Animated, AppRegistry, AppState, AsyncStorage, Button, Modal, NetInfo, Platform, ScrollView, StatusBar, StyleSheet, Image, Text, View, ProgressViewIOS, TouchableHighlight ,TouchableOpacity } from 'react-native';
+import { Alert, Animated, AppRegistry, AppState, AsyncStorage, Button, Dimensions, Modal, NetInfo, Platform, ScrollView, StatusBar, StyleSheet, Image, Text, View, ProgressViewIOS, TouchableHighlight ,TouchableOpacity } from 'react-native';
 import * as firebase from 'firebase';
 import { Calendar, CalendarList } from 'react-native-calendars' 
 import { StackNavigator, } from 'react-navigation';
@@ -14,6 +14,7 @@ import AnimatedDemo from './AnimatedDemo.js';
 import Intro from './Intro.js';
 import Test from './Test.js';
 import FirstUse from './FirstUse.js';
+import Rescale from './Rescale.js';
 var countries = [
 {flag: require("./utils/png/afghanistan.png"),name: "Afghanistan", schengen: false, europe: false},
 {flag: require("./utils/png/albania.png"), name: "Albania", schengen: false, europe: true, colors: ['black', 'red']},
@@ -254,9 +255,16 @@ export default class App extends Component {
         fadeAnim:  new Animated.Value(0),
         todaysDate: moment().format('MMMM Do YYYY'),
         modalVisible: false,
+        orientation: Rescale.isPortrait() ? 'portrait' : 'landscape',
         firstLaunch: null
       }
-
+    Dimensions.addEventListener('change', () => {
+        this.setState({
+            orientation: Rescale.isPortrait() ? 'portrait' : 'landscape',
+            width: Dimensions.get('window').width,
+            height: Dimensions.get('window').height
+        });
+    });
 	this.onLocation = this.onLocation.bind(this)
 	this.onMotionChange = this.onMotionChange.bind(this)
 	this.onActivityChange = this.onActivityChange.bind(this)
@@ -318,8 +326,8 @@ export default class App extends Component {
       const _selectedDay = moment(day.dateString).format(_format);      
       let selected = false; 
     	let textColor = "#58FF67"
-    	let msg = "Not Schengen"
-    	let flag = plusImage
+    	let msg = "Out"
+    	let flag = euroGreen
 
       if (this.state._markedDates[_selectedDay]) {
         selected = !this.state._markedDates[_selectedDay].selected;  
@@ -614,7 +622,19 @@ BackgroundGeolocation.ready({
   }
 
   render() {
+  	  if(this.state.orientation === 'portrait') {
+  	  	topMargin = 24
+
+  } else if(this.state.orientation === 'landscape') {
+  		topMargin = 12
+  }
   	 const { navigate } = this.props.navigation;
+	const styles = StyleSheet.create({
+			  container: {
+			    flex: 1,  
+			    backgroundColor: 'black'
+			  }
+			});
     Animated.timing(                  // Animate over time
       this.state.fadeAnim,            // The animated value to drive
       {
@@ -689,7 +709,7 @@ if(this.state.firstLaunch) {
             alert('Modal has been closed.');
           }}>
           <View style={{backgroundColor: 'black'}}>
-            <View style={{backgroundColor: 'black', marginTop: 32}}>
+            <View style={{backgroundColor: 'black', marginTop: topMargin}}>
               
 
               <TouchableHighlight
@@ -714,12 +734,12 @@ if(this.state.firstLaunch) {
 		                markingType={'period'}               
 		            /> 
 		        </View>
-		        <View style={{height: 210, backgroundColor: 'black'}}>
-		        		<Text style={{color: 'yellow', textAlign: 'center'}}>Swipe back on the calendar to mark the dates you were in Europe</Text>
+		        <View style={{height: 210, backgroundColor: 'black', marginTop: topMargin}}>
+		        		<Text style={{color: 'white', textAlign: 'center', fontSize: 16}}>Swipe back on the calendar to mark the dates that you were<Text style={{color: 'red'}}> In <Text style={{color: 'white'}}> or <Text style={{color: 'green'}}> Out<Text style={{color: 'white'}}> of Europe</Text></Text></Text></Text></Text>
 		        </View>
           </View>
         </Modal>        
-        <View style={{flexDirection: 'row', flexWrap: 'wrap', marginTop: 42, marginBottom: 24,  height: 28}}>
+        <View style={{flexDirection: 'row', flexWrap: 'wrap', marginTop: topMargin, marginBottom: 24,  height: 28}}>
 
 	         <View style={{flex: .20 , marginLeft: 18}}>
 	        		<TouchableOpacity onPress={() => navigate('AnimDemo')}><Icon name="ios-information-circle-outline" size={32} color="#F6FEAC" /></TouchableOpacity>
@@ -745,7 +765,7 @@ if(this.state.firstLaunch) {
         <View style={{flex: .5}}><Text style={{color: 'white', fontSize: 24, textAlign: 'center'}}>{this.state.daysLeft}</Text></View>
         </View>
       
-      <View style={{marginTop: 24, marginBottom: 20}}><ProgressViewIOS  progressTintColor='red' trackTintColor='green' progress={this.state.daysInEU / 90}/></View>
+      <View style={{marginTop: topMargin, marginBottom: 20}}><ProgressViewIOS  progressTintColor='red' trackTintColor='green' progress={this.state.daysInEU / 90}/></View>
       	<View style={{flex: 1, justifyContent: 'center', backgroundColor: 'black'}}>
       	<View style={{justifyContent: 'center', marginBottom: 14}}>
 				<Text style={{color: "#F6FEAC", textAlign: 'center', fontSize: 18, fontWeight: 'bold'}}>Schengen Status</Text>
@@ -764,14 +784,7 @@ if(this.state.firstLaunch) {
   }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
- /*   justifyContent: 'space-evenly',*/
-  
-    backgroundColor: 'black'
-  }
-});
+
 export const freschproject = StackNavigator({
   App: { screen: App },
   Settings: { screen: Settings },
