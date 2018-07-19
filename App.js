@@ -759,12 +759,12 @@ if(this.state.firstLaunch) {
 
         <View style={{flexDirection: 'row', justifyContent: 'space-evenly', height:38}}> 
           <View style={{paddingBottom: 6}}><Text adjustsFontSizeToFit style={{fontSize: 28, fontWeight: 'bold', color: 'white'}}>{this.state.ctry}</Text></View>
-          <View style={{marginLeft: 20, marginTop: 4}}><TouchableOpacity  onPress={this._showAlert}><Image source={this.state.flag} style={{width: 30, height: 30}}/></TouchableOpacity></View>
+          <View style={{marginLeft: 20, marginTop: 4}}><Image source={this.state.flag} style={{width: 30, height: 30}}/></View>
         </View>
       
         <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 12}}>
-        <View style={{flex: .5}}><Text style={{color: '#F6FEAC', fontSize: 18, textAlign: 'center'}}>Days In</Text></View>
-        <View style={{flex: .5}}><Text style={{color: '#F6FEAC', fontSize: 18, textAlign: 'center'}}>Days Left</Text></View>
+        <View style={{flex: .5}}><Text style={{color: '#FF6B4E', fontSize: 18, textAlign: 'center'}}>Days In</Text></View>
+        <View style={{flex: .5}}><Text style={{color: '#58FF67', fontSize: 18, textAlign: 'center'}}>Days Left</Text></View>
         </View>
         <View style={{flexDirection: 'row'}}>
         <View style={{flex: .5}}><Text style={{color: 'white', fontSize: 24, textAlign: 'center'}}>{this.state.daysInEU}</Text></View>

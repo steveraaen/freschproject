@@ -65,13 +65,14 @@ export default class AnimDemo extends Component {
         <Text style={{fontSize:20, color: 'white', lineHeight: 24, textAlign: 'justify'}}>
           Freschen isn’t a planner. It is a tracker. 
         </Text></View>
-        <View><Text style={{fontSize:14, color: 'white'}} >
-          Freschen will monitor the amount of time you can stay in Europe. 
-          You cannot mark a date in the future. Freschen will do that for you. It periodically checks to see which country you’re in. 
-          If you’ve been in a Schengen Area (SA) country within the past 90 days, scroll back on the calendar and tap the dates you were there. 
+        <View><Text style={{fontSize:16, color: 'white'}} >
+          Freschen will monitor the amount of time you can stay in Europe by periodically checking to see which country you’re in. 
+          If you’ve been in a Schengen Area country within the last six months, press the Calendar Icon below, scroll back on the calendar and press the dates you were there. 
         
         </Text></View>
-
+           <View style={{flex: .20 , marginLeft: 18, alignItems: 'center', marginTop: 39}}>
+              <TouchableOpacity onPress={() => { console.log('hello')}}><Icon name="ios-calendar-outline" size={42} color="#F6FEAC" /></TouchableOpacity>
+            </View>
 </View>
       </View>
     );
