@@ -18,8 +18,8 @@ export default class FirstUse extends Component {
 		return(
 			<View style={{flex: 1, justifyContent: 'center', backgroundColor: 'black'}}>
 			<Intro />
-			<View style={{backgroundColor: 'black', margin: 14}}>
-				<Text style={{textAlign: 'center', fontSize: 14, color: '#F6FEAC'}}>{blurb}</Text><Text style={{color: 'white'}}>{sixMonthsAgo}?</Text>
+			<View style={{backgroundColor: 'black', margin: 2}}>
+				<Text style={{textAlign: 'center', fontSize: 14, color: '#F6FEAC'}}>{blurb}<Text style={{color: 'white', fontWeight: 'bold'}}>{sixMonthsAgo}?</Text></Text>
 			</View>
 			<Button	
 				onPress={() => this.props.ackIn()}

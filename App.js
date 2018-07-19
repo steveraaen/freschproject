@@ -623,10 +623,14 @@ BackgroundGeolocation.ready({
 
   render() {
   	  if(this.state.orientation === 'portrait') {
-  	  	topMargin = 24
+  	  	topMargin = 24;
+  	  	horizontalCalendar = true;
+  	  	var calendarFlex ;
 
   } else if(this.state.orientation === 'landscape') {
   		topMargin = 12
+  		horizontalCalendar = false;
+  		calendarFlex = this.state.width * .5;
   }
   	 const { navigate } = this.props.navigation;
 	const styles = StyleSheet.create({
@@ -719,11 +723,12 @@ if(this.state.firstLaunch) {
                 <Icon name="ios-arrow-back-outline" size={32} color="#F6FEAC" />
               </TouchableHighlight>
             </View>
-		         <View>
+            <View style={{flexDirection: 'row', flexWrap: 'wrap'}}>
+		         <View style={{width: calendarFlex}}>
 		           <CalendarList
-		                horizontal={true}
+		                horizontal={horizontalCalendar}
 		                style={{marginTop: 1, height: 320}}           
-		                theme={{ calendarBackground: 'black', monthTextColor: 'white', textDisabledColor: 'gray', selectedDayTextColor: 'red'}}
+		                theme={{ calendarBackground: 'black', monthTextColor: 'white', textDisabledColor: 'gray', selectedDayTextColor: '#FF6B4E'}}
 		                pastScrollRange={6}
 		              	 minDate={moment().subtract(180, 'days').format(_format)}
 		              	 maxDate={moment().format(_format)}                
@@ -734,8 +739,9 @@ if(this.state.firstLaunch) {
 		                markingType={'period'}               
 		            /> 
 		        </View>
+		        </View>
 		        <View style={{height: 210, backgroundColor: 'black', marginTop: topMargin}}>
-		        		<Text style={{color: 'white', textAlign: 'center', fontSize: 16}}>Swipe back on the calendar to mark the dates that you were<Text style={{color: 'red'}}> In <Text style={{color: 'white'}}> or <Text style={{color: 'green'}}> Out<Text style={{color: 'white'}}> of Europe</Text></Text></Text></Text></Text>
+		        		<Text style={{color: 'white', textAlign: 'center', fontSize: 16}}>Swipe back on the calendar to mark the dates that you were<Text style={{color: '#FF6B4E'}}> In <Text style={{color: 'white'}}> or <Text style={{color: '#58FF67'}}> Out<Text style={{color: 'white'}}> of Europe</Text></Text></Text></Text></Text>
 		        </View>
           </View>
         </Modal>        
@@ -765,7 +771,7 @@ if(this.state.firstLaunch) {
         <View style={{flex: .5}}><Text style={{color: 'white', fontSize: 24, textAlign: 'center'}}>{this.state.daysLeft}</Text></View>
         </View>
       
-      <View style={{marginTop: topMargin, marginBottom: 20}}><ProgressViewIOS  progressTintColor='red' trackTintColor='green' progress={this.state.daysInEU / 90}/></View>
+      <View style={{marginTop: topMargin, marginBottom: 20}}><ProgressViewIOS  progressTintColor='#FF6B4E' trackTintColor='#58FF67' progress={this.state.daysInEU / 90}/></View>
       	<View style={{flex: 1, justifyContent: 'center', backgroundColor: 'black'}}>
       	<View style={{justifyContent: 'center', marginBottom: 14}}>
 				<Text style={{color: "#F6FEAC", textAlign: 'center', fontSize: 18, fontWeight: 'bold'}}>Schengen Status</Text>

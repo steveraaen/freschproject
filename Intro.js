@@ -373,7 +373,7 @@ for(let i = 0; i < this.state.curFlags.length; i++) {
        <Animated.View style={[styles.block, {marginLeft} ]}><Text style={styles.blockText}>Fres</Text> </Animated.View>	
        <Animated.View style={[styles.blockb, {marginTop}]}><Text style={styles.blockTextb}>chen</Text> </Animated.View>	
      </View>	
- 		<View style={{marginTop: 26, marginLeft: 22,flexDirection: 'row'}}>	
+ 		<View style={{marginTop: 4, marginLeft: 22,flexDirection: 'row'}}>	
          <TouchableOpacity onPress={() => navigate('App')}><Icon name="ios-arrow-round-back-outline" size={40} color='black' /></TouchableOpacity>	
      </View>	
      <View style={{flexDirection: "row", flexWrap: 'wrap', justifyContent: 'center' }}>   	
