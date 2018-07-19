@@ -56,11 +56,11 @@ export default class AnimDemo extends Component {
         <View style={{marginTop: 32, marginLeft: 22,flexDirection: 'row', justifyContent: 'flex-start'}}>
           <TouchableOpacity onPress={() => navigate('App')}><Icon name="ios-arrow-round-back-outline" size={40} color='#5078F8' /></TouchableOpacity>
         </View>
-      <View style={{flex: .1, flexDirection: 'row', justifyContent: 'flex-start'}}>
+      <View style={{flex: .1, flexDirection: 'row', justifyContent: 'flex-start', marginBottom: 20}}>
         <Animated.View style={[styles.block, {marginLeft}, {opacity} ]}><Text style={styles.blockText}>Fres</Text> </Animated.View>
         <Animated.View style={[styles.blockb, {marginTop}, {opacity}]}><Text style={styles.blockTextb}>chen</Text> </Animated.View>
       </View>
-        <View style={{flex: 1, marginLeft: 22, marginRight: 22}}>
+        <View style={{flex: 1, marginLeft: 12, marginRight: 12}}>
         <View style={{marginBottom: 12}}>
         <Text style={{fontSize:20, color: 'white', lineHeight: 24, textAlign: 'justify'}}>
           Freschen isn’t a planner. It is a tracker. 
