@@ -748,7 +748,7 @@ if(this.state.firstLaunch) {
         <View style={{flexDirection: 'row', flexWrap: 'wrap', marginTop: topMargin, marginBottom: 24,  height: 28}}>
 
 	         <View style={{flex: .20 , marginLeft: 18}}>
-	        		<TouchableOpacity onPress={() => navigate('AnimDemo')}><Icon name="ios-information-circle-outline" size={32} color="#F6FEAC" /></TouchableOpacity>
+	        		<TouchableOpacity onPress={() => navigate('AnimDemo', {setModalVisible: this.setModalVisible})}><Icon name="ios-information-circle-outline" size={32} color="#F6FEAC" /></TouchableOpacity>
 	        	</View>
 
 

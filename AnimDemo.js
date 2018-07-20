@@ -71,7 +71,7 @@ export default class AnimDemo extends Component {
         
         </Text></View>
            <View style={{flex: .20 , marginLeft: 18, alignItems: 'center', marginTop: 39}}>
-              <TouchableOpacity onPress={() => { console.log('hello')}}><Icon name="ios-calendar-outline" size={42} color="#F6FEAC" /></TouchableOpacity>
+              <TouchableOpacity onPress={() => this.props.navigation.state.params.setModalVisible(true)}><Icon name="ios-calendar-outline" size={38} color="#F6FEAC" /></TouchableOpacity>
             </View>
 </View>
       </View>
