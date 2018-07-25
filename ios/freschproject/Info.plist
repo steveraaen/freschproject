@@ -21,7 +21,7 @@
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
-	<string>3</string>
+	<string>5</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -36,9 +36,9 @@
 		</dict>
 	</dict>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>By allowing access, you do not have to open Freschen for it to work</string>
+	<string>By allowing 'Always Allow' access, Freschen will occasionally check which country you are in, even when the app is in the background. Granting 'Only While Using the App', access means that it will only refresh each time you open the application. Freschen does not ask for, or collect any personally identifiable information about you, and only stores the dates and countries you visited while the app is installed.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Freschen needs to know if you are in the Schengen Area</string>
+	<string>By allowing Freschen access to your location, it can determine whether you are in the Schengen Area, as long as you open the app one time each day. Freschen does not ask for, or collect any personally identifiable information about you, and only stores the dates and countries you visited while the app is installed.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Accelerometer use increases battery efficiency by intelligently toggling location-tracking</string>
 	<key>UIAppFonts</key>
