@@ -7,7 +7,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import moment from 'moment';
 import axios from 'axios';
 import BackgroundGeolocation from "react-native-background-geolocation";
-/*import BackgroundTimer from 'react-native-background-timer'*/
+import gkey from './keys.js'
 import Settings from './Settings.js';
 import AnimDemo from './AnimDemo.js';
 import AnimatedDemo from './AnimatedDemo.js';
@@ -15,6 +15,7 @@ import Intro from './Intro.js';
 import Test from './Test.js';
 import FirstUse from './FirstUse.js';
 import Rescale from './Rescale.js';
+console.log(Rescale.isTablet())
 var countries = [
 {flag: require("./utils/png/afghanistan.png"),name: "Afghanistan", schengen: false, europe: false},
 {flag: require("./utils/png/albania.png"), name: "Albania", schengen: false, europe: true, colors: ['black', 'red']},
@@ -367,7 +368,7 @@ console.log(selectedArray.length)
       var histObj = {}
       var histArray = [this.state.histObj] 
 
-     return axios.get('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + parseFloat(this.state.deviceLat).toFixed(6) +',' + parseFloat(this.state.deviceLng).toFixed(6) + '&key=AIzaSyD0Zrt4a_yUyZEGZBxGULidgIWK05qYeqs', {
+     return axios.get('https://maps.googleapis.com/maps/api/geocode/json?latlng=' + parseFloat(this.state.deviceLat).toFixed(6) +',' + parseFloat(this.state.deviceLng).toFixed(6) + '&key='+gkey, {
         }).then((doc) => {
 console.log(doc)
         for (let i = 0; i < countries.length; i++) {
@@ -474,7 +475,7 @@ console.log(doc)
 
 BackgroundGeolocation.ready({
 
-  distanceFilter: 10,
+  distanceFilter: 100,
 	logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
 	stopOnTerminate: false,   // <-- Allow the background-service to continue tracking when user closes the app.
 	startOnBoot: true,
@@ -675,11 +676,6 @@ BackgroundGeolocation.ready({
 						)
 
 				})
-
-
-
-
-
 			/*	dts = dts.reverse()*/
 			var starray = []
 			for(let i = 0; i < dts.length; i++) {
@@ -700,15 +696,16 @@ if(this.state.firstLaunch) {
 } else {
     return (
       <View style={styles.container}>
-         <StatusBar
-		    
+         <StatusBar		    
 		     barStyle="light-content"
    />
+
         <Modal
           supportedOrientations={['portrait', 'portrait-upside-down', 'landscape', 'landscape-left', 'landscape-right']}
           animationType="fade"
           transparent={false}
           visible={this.state.modalVisible}
+          transparent={true}
           onRequestClose={() => {
             alert('Modal has been closed.');
           }}>
