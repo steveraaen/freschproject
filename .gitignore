@@ -30,7 +30,7 @@ build/
 local.properties
 *.iml
 *.mov
-
+keys.js
 # node.js
 #
 node_modules/
